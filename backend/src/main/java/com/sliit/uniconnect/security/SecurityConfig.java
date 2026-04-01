@@ -44,8 +44,6 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                     // ── MUST be first: allow ALL preflight (OPTIONS) requests ──
-                    // Browsers send OPTIONS before every cross-origin request.
-                    // Without this they get 401 before the CORS headers are sent.
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                     // Public auth endpoints
@@ -53,6 +51,9 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                     .requestMatchers(HttpMethod.GET,  "/api/auth/verify-email").permitAll()
+
+                    // Public user profile — viewable without login
+                    .requestMatchers(HttpMethod.GET, "/api/users/*/profile").permitAll()
 
                     // Everything else requires a valid JWT
                     .anyRequest().authenticated()

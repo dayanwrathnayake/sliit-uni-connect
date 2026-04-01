@@ -16,6 +16,7 @@ const useAuthStore = create(
       displayName: null,
       role: null,
       faculty: null,
+      profilePicUrl: null,
       isAuthenticated: false,
 
       // ── Actions ────────────────────────────────────────────────────────
@@ -32,6 +33,7 @@ const useAuthStore = create(
           displayName: authData.displayName,
           role: authData.role,
           faculty: authData.faculty,
+          profilePicUrl: authData.profilePicUrl ?? null,
           isAuthenticated: true,
         }),
 
@@ -47,6 +49,7 @@ const useAuthStore = create(
           displayName: null,
           role: null,
           faculty: null,
+          profilePicUrl: null,
           isAuthenticated: false,
         }),
     }),
