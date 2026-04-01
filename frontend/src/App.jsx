@@ -8,8 +8,10 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import HomePage from './pages/HomePage';
+import ProfilePage from './pages/ProfilePage';
+import EditProfilePage from './pages/EditProfilePage';
 
-// ── "Coming soon" placeholder element ────────────────────────────────────
+// ── "Coming soon" placeholder ─────────────────────────────────────────────
 function ComingSoon({ label }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950">
@@ -27,28 +29,32 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* ── Public routes ───────────────────────────────────────── */}
+          {/* ── Public routes ─────────────────────────────────────────── */}
           <Route path="/login"        element={<LoginPage />} />
           <Route path="/register"     element={<RegisterPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-          {/* ── Protected routes ────────────────────────────────────── */}
+          {/* ── Protected routes ──────────────────────────────────────── */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/"              element={<HomePage />} />
+
+            {/* Profile — /profile/me resolved inside ProfilePage */}
+            <Route path="/profile/edit"  element={<EditProfilePage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
 
             <Route path="/clubs"     element={<ComingSoon label="Clubs & Societies" />} />
             <Route path="/events"    element={<ComingSoon label="Events" />} />
             <Route path="/volunteer" element={<ComingSoon label="Volunteer Hub" />} />
             <Route path="/shop"      element={<ComingSoon label="Student Shop" />} />
 
-            {/* Admin — requires SYSTEM_ADMIN role */}
+            {/* Admin — SYSTEM_ADMIN only */}
             <Route element={<RoleProtectedRoute allowedRoles={['SYSTEM_ADMIN']} />}>
               <Route path="/admin" element={<ComingSoon label="Admin Dashboard" />} />
             </Route>
           </Route>
 
-          {/* ── Catch-all — redirect to home ────────────────────────── */}
+          {/* ── Catch-all ────────────────────────────────────────────── */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
