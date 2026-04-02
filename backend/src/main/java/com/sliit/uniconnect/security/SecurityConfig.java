@@ -43,17 +43,34 @@ public class SecurityConfig {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
             .authorizeHttpRequests(auth -> auth
-                    // ── MUST be first: allow ALL preflight (OPTIONS) requests ──
+                    // Preflight
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                    // Public auth endpoints
+                    // Public student auth
                     .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                     .requestMatchers(HttpMethod.GET,  "/api/auth/verify-email").permitAll()
 
-                    // Public user profile — viewable without login
+                    // Public staff login (no register — staff are provisioned)
+                    .requestMatchers(HttpMethod.POST, "/api/staff/auth/login").permitAll()
+
+                    // Public user profile
                     .requestMatchers(HttpMethod.GET, "/api/users/*/profile").permitAll()
+
+                    // Staff management — SYSTEM_ADMIN only
+                    .requestMatchers(HttpMethod.POST,   "/api/staff/register").hasRole("SYSTEM_ADMIN")
+                    .requestMatchers(HttpMethod.GET,    "/api/staff/faculty-managers").hasRole("SYSTEM_ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/api/staff/**").hasRole("SYSTEM_ADMIN")
+
+                    // Club approval — SYSTEM_ADMIN or FACULTY_MANAGER
+                    .requestMatchers(HttpMethod.GET, "/api/clubs/pending")
+                            .hasAnyRole("SYSTEM_ADMIN", "FACULTY_MANAGER")
+                    .requestMatchers(HttpMethod.PUT, "/api/clubs/*/approve")
+                            .hasAnyRole("SYSTEM_ADMIN", "FACULTY_MANAGER")
+
+                    // All other club endpoints — any authenticated user
+                    .requestMatchers("/api/clubs/**").authenticated()
 
                     // Everything else requires a valid JWT
                     .anyRequest().authenticated()

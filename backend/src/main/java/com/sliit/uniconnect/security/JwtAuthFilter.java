@@ -1,5 +1,6 @@
 package com.sliit.uniconnect.security;
 
+import com.sliit.uniconnect.repository.StaffUserRepository;
 import com.sliit.uniconnect.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,10 +21,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final StaffUserRepository staffUserRepository;
 
-    public JwtAuthFilter(JwtUtil jwtUtil, UserRepository userRepository) {
+    public JwtAuthFilter(JwtUtil jwtUtil,
+                         UserRepository userRepository,
+                         StaffUserRepository staffUserRepository) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.staffUserRepository = staffUserRepository;
     }
 
     @Override
@@ -35,7 +40,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // If no Bearer token is present just move on — the endpoint may be public.
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -44,26 +48,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String token = authHeader.substring(7);
 
         if (!jwtUtil.isTokenValid(token)) {
-            // Invalid / expired token — unauthenticated; let Spring Security handle 401.
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Only set authentication if not already set in this request.
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            String userId = jwtUtil.extractUserId(token);
-            String role = jwtUtil.extractRole(token);
+            String userId   = jwtUtil.extractUserId(token);
+            String role     = jwtUtil.extractRole(token);
+            String userType = jwtUtil.extractUserType(token); // "STUDENT" or "STAFF"
 
-            // Optional: verify user still exists in DB
-            boolean userExists = userRepository.existsById(userId);
-            if (userExists) {
+            // Route existence check to the correct MongoDB collection
+            boolean exists = "STAFF".equals(userType)
+                    ? staffUserRepository.existsById(userId)
+                    : userRepository.existsById(userId);
+
+            if (exists) {
                 List<SimpleGrantedAuthority> authorities = role != null
                         ? List.of(new SimpleGrantedAuthority("ROLE_" + role))
                         : List.of();
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userId, null, authorities);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                authentication.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

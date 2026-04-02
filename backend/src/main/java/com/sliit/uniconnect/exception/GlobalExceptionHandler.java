@@ -41,6 +41,28 @@ public class GlobalExceptionHandler {
         return errorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
+    // ── Club domain exceptions ────────────────────────────────────────────────
+
+    @ExceptionHandler(ClubNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleClubNotFound(ClubNotFoundException ex) {
+        return errorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ClubNameAlreadyExistsException.class)
+    public ResponseEntity<Map<String, Object>> handleClubNameExists(ClubNameAlreadyExistsException ex) {
+        return errorResponse(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(UnauthorizedClubActionException.class)
+    public ResponseEntity<Map<String, Object>> handleUnauthorizedClub(UnauthorizedClubActionException ex) {
+        return errorResponse(ex.getMessage(), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(ClubNotApprovedException.class)
+    public ResponseEntity<Map<String, Object>> handleClubNotApproved(ClubNotApprovedException ex) {
+        return errorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     // ── Bean Validation errors (@Valid on controller params) ────────────────
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

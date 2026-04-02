@@ -10,6 +10,12 @@ import UnauthorizedPage from './pages/UnauthorizedPage';
 import HomePage from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
 import EditProfilePage from './pages/EditProfilePage';
+import StaffLoginPage from './pages/StaffLoginPage';
+import ClubsDiscoveryPage from './pages/ClubsDiscoveryPage';
+import ClubProfilePage from './pages/ClubProfilePage';
+import EditClubPage from './pages/EditClubPage';
+import ClubApprovalPage from './pages/ClubApprovalPage';
+
 
 // ── "Coming soon" placeholder ─────────────────────────────────────────────
 function ComingSoon({ label }) {
@@ -34,21 +40,31 @@ export default function App() {
           <Route path="/register"     element={<RegisterPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
+          <Route path="/staff/login"  element={<StaffLoginPage />} />
+
+          {/* ── Public club pages (viewable without login) ────────────── */}
+          <Route path="/clubs"            element={<ClubsDiscoveryPage />} />
+          <Route path="/clubs/:clubId"    element={<ClubProfilePage />} />
 
           {/* ── Protected routes ──────────────────────────────────────── */}
           <Route element={<ProtectedRoute />}>
             <Route path="/"              element={<HomePage />} />
 
-            {/* Profile — /profile/me resolved inside ProfilePage */}
+            {/* Profile */}
             <Route path="/profile/edit"  element={<EditProfilePage />} />
             <Route path="/profile/:userId" element={<ProfilePage />} />
 
-            <Route path="/clubs"     element={<ComingSoon label="Clubs & Societies" />} />
+            {/* Club — protected actions */}
+            <Route path="/clubs/:clubId/edit" element={<EditClubPage />} />
+
             <Route path="/events"    element={<ComingSoon label="Events" />} />
             <Route path="/volunteer" element={<ComingSoon label="Volunteer Hub" />} />
             <Route path="/shop"      element={<ComingSoon label="Student Shop" />} />
 
-            {/* Admin — SYSTEM_ADMIN only */}
+            {/* Admin — SYSTEM_ADMIN or FACULTY_MANAGER */}
+            <Route path="/admin/clubs/pending" element={<ClubApprovalPage />} />
+
+            {/* Legacy admin route */}
             <Route element={<RoleProtectedRoute allowedRoles={['SYSTEM_ADMIN']} />}>
               <Route path="/admin" element={<ComingSoon label="Admin Dashboard" />} />
             </Route>
