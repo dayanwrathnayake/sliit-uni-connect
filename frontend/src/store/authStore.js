@@ -16,6 +16,7 @@ const useAuthStore = create(
       displayName: null,
       role: null,
       faculty: null,
+      userType: null,        // "STUDENT" | "STAFF"
       profilePicUrl: null,
       isAuthenticated: false,
 
@@ -28,11 +29,12 @@ const useAuthStore = create(
       setAuth: (authData) =>
         set({
           accessToken: authData.accessToken,
-          refreshToken: authData.refreshToken,
-          userId: authData.userId,
+          refreshToken: authData.refreshToken ?? null,
+          userId: authData.userId ?? null,
           displayName: authData.displayName,
           role: authData.role,
-          faculty: authData.faculty,
+          faculty: authData.faculty ?? null,
+          userType: authData.userType ?? 'STUDENT',
           profilePicUrl: authData.profilePicUrl ?? null,
           isAuthenticated: true,
         }),
@@ -49,6 +51,7 @@ const useAuthStore = create(
           displayName: null,
           role: null,
           faculty: null,
+          userType: null,
           profilePicUrl: null,
           isAuthenticated: false,
         }),

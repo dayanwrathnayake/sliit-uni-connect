@@ -104,8 +104,8 @@ public class AuthService {
         emailService.sendVerificationEmail(savedUser.getEmail(), emailVerificationToken);
 
         // 9. Return tokens
-        String accessToken  = jwtUtil.generateAccessToken(savedUser.getId(), savedUser.getRole().name());
-        String refreshToken = jwtUtil.generateRefreshToken(savedUser.getId());
+        String accessToken  = jwtUtil.generateAccessToken(savedUser.getId(), savedUser.getRole().name(), "STUDENT");
+        String refreshToken = jwtUtil.generateRefreshToken(savedUser.getId(), "STUDENT");
 
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)
@@ -131,8 +131,8 @@ public class AuthService {
         }
 
         // 3. Generate tokens
-        String accessToken  = jwtUtil.generateAccessToken(user.getId(), user.getRole().name());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getId());
+        String accessToken  = jwtUtil.generateAccessToken(user.getId(), user.getRole().name(), "STUDENT");
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId(), "STUDENT");
 
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)

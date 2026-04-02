@@ -3,10 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useAuthStore } from '../../store/authStore';
 import { avatarColour, initials } from '../profile/ProfileCard';
+import { canApproveClubs } from '../../utils/roles';
 
 export default function Navbar() {
   const { logout } = useAuth();
-  const { displayName, profilePicUrl, isAuthenticated } = useAuthStore();
+  const store = useAuthStore();
+  const { displayName, profilePicUrl, isAuthenticated } = store;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -41,8 +43,26 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* ── Desktop right side ── */}
+          {/* ── Desktop nav links + right side ── */}
           <div className="hidden sm:flex items-center gap-3">
+            {isAuthenticated && (
+              <div className="flex items-center gap-1">
+                <Link
+                  to="/clubs"
+                  className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  Clubs
+                </Link>
+                {canApproveClubs(store) && (
+                  <Link
+                    to="/admin/clubs/pending"
+                    className="px-3 py-1.5 text-sm text-orange-400 hover:text-orange-300 hover:bg-slate-800 rounded-lg transition-colors font-medium"
+                  >
+                    Approvals
+                  </Link>
+                )}
+              </div>
+            )}
             {isAuthenticated ? (
               <div className="relative" ref={dropdownRef}>
                 {/* Avatar + name button */}
@@ -148,6 +168,10 @@ export default function Navbar() {
                 <span className="text-sm font-medium text-white">{displayName}</span>
               </div>
               <Link to="/profile/me" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">My Profile</Link>
+              <Link to="/clubs" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Clubs</Link>
+              {canApproveClubs(store) && (
+                <Link to="/admin/clubs/pending" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-orange-400 hover:bg-slate-800 transition-colors font-medium">Approvals</Link>
+              )}
               <Link to="/profile/edit" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Edit Profile</Link>
               <button onClick={() => { setMobileOpen(false); logout(); }} className="block w-full text-left rounded-lg px-3 py-2.5 text-sm text-red-400 hover:bg-slate-800 transition-colors">
                 Logout
