@@ -79,6 +79,11 @@ export default function RegisterPage() {
   const studentIdValue = watch('studentId', '');
   const passwordValue = watch('password', '');
 
+  // Auto-derive the email from the student ID
+  const derivedEmail = studentIdValue
+    ? `${studentIdValue.toLowerCase()}@my.sliit.lk`
+    : '';
+
   if (!isLoading && isAuthenticated) {
     return <Navigate to="/" replace />;
   }
@@ -87,8 +92,8 @@ export default function RegisterPage() {
     setApiError('');
     try {
       await api.post('/api/auth/register', {
-        studentId: formData.studentId,
-        email: formData.email,
+        studentId: formData.studentId.toUpperCase(),
+        email: derivedEmail,
         password: formData.password,
         displayName: formData.displayName,
         referralCode: formData.referralCode || '',
@@ -176,7 +181,8 @@ export default function RegisterPage() {
                 type="text"
                 autoComplete="off"
                 placeholder="IT23413474"
-                className={`w-full rounded-lg bg-slate-800 border px-4 py-2.5 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition font-mono ${errors.studentId ? 'border-red-500' : 'border-slate-700'}`}
+                style={{ textTransform: 'uppercase' }}
+                className={`w-full rounded-lg bg-slate-800 border px-4 py-2.5 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition font-mono tracking-widest ${errors.studentId ? 'border-red-500' : 'border-slate-700'}`}
                 {...register('studentId', {
                   required: 'Student ID is required',
                   pattern: {
@@ -189,26 +195,31 @@ export default function RegisterPage() {
               {errors.studentId && <p className="mt-1.5 text-xs text-red-400">{errors.studentId.message}</p>}
             </div>
 
-            {/* Email */}
+            {/* Email — auto-filled from Student ID, read-only */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="reg-email">
                 Email address
+                <span className="ml-2 text-xs font-normal text-slate-500">(auto-filled)</span>
               </label>
-              <input
-                id="reg-email"
-                type="email"
-                autoComplete="email"
-                placeholder="it23xxxxxx@my.sliit.lk"
-                className={`w-full rounded-lg bg-slate-800 border px-4 py-2.5 text-white placeholder-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition ${errors.email ? 'border-red-500' : 'border-slate-700'}`}
-                {...register('email', {
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'Enter a valid email address',
-                  },
-                })}
-              />
-              {errors.email && <p className="mt-1.5 text-xs text-red-400">{errors.email.message}</p>}
+              <div className="relative">
+                <input
+                  id="reg-email"
+                  type="email"
+                  readOnly
+                  tabIndex={-1}
+                  value={derivedEmail}
+                  placeholder="Enter your Student ID above"
+                  className="w-full rounded-lg bg-slate-700/50 border border-slate-700 px-4 py-2.5 text-slate-400 placeholder-slate-600 text-sm cursor-not-allowed select-none"
+                />
+                {derivedEmail && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-xs text-slate-500">Generated from your Student ID — cannot be changed</p>
             </div>
 
             {/* Password */}

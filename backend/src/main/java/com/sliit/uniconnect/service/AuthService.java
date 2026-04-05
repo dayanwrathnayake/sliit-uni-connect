@@ -144,6 +144,36 @@ public class AuthService {
                 .build();
     }
 
+    // ── Refresh Token ─────────────────────────────────────────────────────────
+
+    public AuthResponseDTO refreshAccessToken(String refreshToken) {
+
+        // 1. Validate the token
+        if (!jwtUtil.isTokenValid(refreshToken)) {
+            throw new InvalidCredentialsException("Invalid or expired refresh token");
+        }
+
+        // 2. Extract userId from the token
+        String userId = jwtUtil.extractUserId(refreshToken);
+
+        // 3. Find the user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+
+        // 4. Issue a brand-new access token + refresh token
+        String newAccessToken  = jwtUtil.generateAccessToken(userId, user.getRole().name(), "STUDENT");
+        String newRefreshToken = jwtUtil.generateRefreshToken(userId, "STUDENT");
+
+        return AuthResponseDTO.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .userId(user.getId())
+                .displayName(user.getDisplayName())
+                .role(user.getRole().name())
+                .faculty(user.getFaculty().name())
+                .build();
+    }
+
     // ── Email Verification ────────────────────────────────────────────────────
 
     public String verifyEmail(String token) {

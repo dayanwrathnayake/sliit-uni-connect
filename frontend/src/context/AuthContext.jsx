@@ -42,12 +42,14 @@ export function AuthProvider({ children }) {
       try {
         const { data } = await axios.post(`${BASE_URL}/api/auth/refresh`, { refreshToken });
 
-        setAuth(data);
+        // Pass userType explicitly — students always restore as STUDENT
+        setAuth({ ...data, userType: 'STUDENT' });
         setUser({
           userId:      data.userId,
           displayName: data.displayName,
           role:        data.role,
           faculty:     data.faculty,
+          userType:    'STUDENT',
         });
 
         // Fetch full profile to restore profilePicUrl (not in refresh response)
