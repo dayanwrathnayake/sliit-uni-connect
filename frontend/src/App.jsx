@@ -15,6 +15,8 @@ import ClubsDiscoveryPage from './pages/ClubsDiscoveryPage';
 import ClubProfilePage from './pages/ClubProfilePage';
 import EditClubPage from './pages/EditClubPage';
 import ClubApprovalPage from './pages/ClubApprovalPage';
+// ADD THIS
+import NotificationsPage from './pages/notifications/NotificationsPage';
 
 
 // ── "Coming soon" placeholder ─────────────────────────────────────────────
@@ -48,7 +50,9 @@ export default function App() {
 
           {/* ── Protected routes ──────────────────────────────────────── */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/"              element={<HomePage />} />
+            {/* Smart root redirect */}
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<HomePage />} />
 
             {/* Profile */}
             <Route path="/profile/edit"  element={<EditProfilePage />} />
@@ -56,6 +60,9 @@ export default function App() {
 
             {/* Club — protected actions */}
             <Route path="/clubs/:clubId/edit" element={<EditClubPage />} />
+
+            {/* ADD THIS */}
+            <Route path="/notifications" element={<NotificationsPage />} />
 
             <Route path="/events"    element={<ComingSoon label="Events" />} />
             <Route path="/volunteer" element={<ComingSoon label="Volunteer Hub" />} />

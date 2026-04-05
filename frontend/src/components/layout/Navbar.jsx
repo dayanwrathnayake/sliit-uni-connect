@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useAuthStore } from '../../store/authStore';
 import { avatarColour, initials } from '../profile/ProfileCard';
-import { canApproveClubs } from '../../utils/roles';
+import { canApproveClubs, isStudent } from '../../utils/roles';
+// ADD THIS
+import NotificationBell from '../notifications/NotificationBell';
 
 export default function Navbar() {
   const { logout } = useAuth();
@@ -48,6 +50,12 @@ export default function Navbar() {
             {isAuthenticated && (
               <div className="flex items-center gap-1">
                 <Link
+                  to="/home"
+                  className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  Home
+                </Link>
+                <Link
                   to="/clubs"
                   className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
                 >
@@ -63,6 +71,9 @@ export default function Navbar() {
                 )}
               </div>
             )}
+            {/* ADD THIS: bell icon for students */}
+            {isAuthenticated && isStudent(store) && <NotificationBell />}
+
             {isAuthenticated ? (
               <div className="relative" ref={dropdownRef}>
                 {/* Avatar + name button */}

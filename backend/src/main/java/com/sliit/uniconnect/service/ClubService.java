@@ -22,6 +22,8 @@ public class ClubService {
     private final ClubPostRepository clubPostRepository;
     private final UserRepository userRepository;
     private final StaffUserRepository staffUserRepository;
+    // ADD: notification dispatch
+    private final NotificationService notificationService;
 
     // ── DTO Mappers ───────────────────────────────────────────────────────────
 
@@ -137,6 +139,28 @@ public class ClubService {
 
         club.setUpdatedAt(LocalDateTime.now());
         Club saved = clubRepository.save(club);
+
+        // ADD: notify the student who requested the club
+        if (dto.isApproved()) {
+            notificationService.sendNotification(
+                    saved.getRequestedBy(),
+                    "CLUB_APPROVED",
+                    "Your club '" + saved.getName() + "' has been approved! You are now a Club Admin.",
+                    "/clubs/" + saved.getId(),
+                    saved.getName(),
+                    saved.getProfilePicUrl()
+            );
+        } else {
+            notificationService.sendNotification(
+                    saved.getRequestedBy(),
+                    "CLUB_REJECTED",
+                    "Your club request '" + saved.getName() + "' was rejected. Reason: " + dto.getRejectionReason(),
+                    "/clubs",
+                    "SLIIT UNI-Connect",
+                    null
+            );
+        }
+
         return toResponseDTO(saved, staffUserId);
     }
 
@@ -190,6 +214,19 @@ public class ClubService {
             club.setFollowerCount(club.getFollowerIds().size());
             club.setUpdatedAt(LocalDateTime.now());
             clubRepository.save(club);
+
+            // ADD: notify the club admin about new follower
+            User follower = userRepository.findById(userId).orElse(null);
+            String followerName = follower != null ? follower.getDisplayName() : "A student";
+            String followerPic  = follower != null ? follower.getProfilePicUrl() : null;
+            notificationService.sendNotification(
+                    club.getAdminId(),
+                    "NEW_FOLLOWER",
+                    followerName + " started following " + club.getName(),
+                    "/clubs/" + clubId,
+                    followerName,
+                    followerPic
+            );
         }
 
         return toResponseDTO(club, userId);
@@ -277,6 +314,20 @@ public class ClubService {
                 .build();
 
         ClubPost saved = clubPostRepository.save(post);
+
+        // ADD: notify all club followers about the new post
+        String postPreview = truncate(dto.getContent(), 60);
+        for (String followerId : club.getFollowerIds()) {
+            notificationService.sendNotification(
+                    followerId,
+                    "NEW_CLUB_POST",
+                    club.getName() + " posted: " + postPreview,
+                    "/clubs/" + clubId,
+                    club.getName(),
+                    club.getProfilePicUrl()
+            );
+        }
+
         return toPostResponseDTO(saved, authorId);
     }
 
@@ -296,7 +347,9 @@ public class ClubService {
         ClubPost post = clubPostRepository.findById(postId)
                 .orElseThrow(() -> new ClubNotFoundException("Post not found with id: " + postId));
 
-        if (post.getLikedByIds().contains(userId)) {
+        boolean isAdding = !post.getLikedByIds().contains(userId);
+
+        if (!isAdding) {
             post.getLikedByIds().remove(userId);
             post.setLikeCount(Math.max(0, post.getLikeCount() - 1));
         } else {
@@ -306,6 +359,24 @@ public class ClubService {
 
         post.setUpdatedAt(LocalDateTime.now());
         ClubPost saved = clubPostRepository.save(post);
+
+        // ADD: notify club admin when someone likes their post (not on unlike)
+        if (isAdding) {
+            clubRepository.findById(post.getClubId()).ifPresent(club -> {
+                User liker = userRepository.findById(userId).orElse(null);
+                String likerName = liker != null ? liker.getDisplayName() : "A student";
+                String likerPic  = liker != null ? liker.getProfilePicUrl() : null;
+                notificationService.sendNotification(
+                        club.getAdminId(),
+                        "CLUB_POST_LIKED",
+                        likerName + " liked your post in " + club.getName(),
+                        "/clubs/" + club.getId(),
+                        likerName,
+                        likerPic
+                );
+            });
+        }
+
         return toPostResponseDTO(saved, userId);
     }
 
@@ -341,5 +412,11 @@ public class ClubService {
             throw new UnauthorizedClubActionException(
                     "Only the club admin can perform this action.");
         }
+    }
+
+    // ADD: truncate helper for notification messages
+    private String truncate(String text, int maxLength) {
+        if (text == null) return "";
+        return text.length() <= maxLength ? text : text.substring(0, maxLength) + "...";
     }
 }

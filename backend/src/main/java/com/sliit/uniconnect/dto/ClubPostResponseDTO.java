@@ -1,5 +1,6 @@
 package com.sliit.uniconnect.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,5 +25,6 @@ public class ClubPostResponseDTO {
     private LocalDateTime createdAt;
 
     /** True if the currently authenticated user has liked this post. */
+    @JsonProperty("isLikedByMe")
     private boolean isLikedByMe;
 }

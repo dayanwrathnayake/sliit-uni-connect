@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { followClub, unfollowClub } from '../../api/clubApi';
 import { isStudent } from '../../utils/roles';
@@ -15,10 +15,15 @@ import { isStudent } from '../../utils/roles';
  */
 export default function FollowButton({ clubId, initialIsFollowing, followerCount, onToggle }) {
   const store = useAuthStore();
-  const [following, setFollowing] = useState(initialIsFollowing);
-  const [count, setCount] = useState(followerCount ?? 0);
-  const [loading, setLoading] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  const [following, setFollowing] = useState(!!initialIsFollowing);
+  const [count, setCount]         = useState(followerCount ?? 0);
+  const [loading, setLoading]     = useState(false);
+
+  // Sync with parent when props change (e.g. after refetch)
+  useEffect(() => {
+    setFollowing(!!initialIsFollowing);
+    setCount(followerCount ?? 0);
+  }, [initialIsFollowing, followerCount]);
 
   // Only students can follow
   if (!isStudent(store)) return null;
@@ -45,22 +50,16 @@ export default function FollowButton({ clubId, initialIsFollowing, followerCount
     }
   }
 
-  const buttonLabel = following
-    ? hovered
-      ? 'Unfollow'
-      : 'Following'
-    : 'Follow';
+  const buttonLabel = following ? 'Unfollow' : 'Follow';
 
   return (
     <button
       onClick={handleToggle}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       disabled={loading}
       className={`
         flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-60
         ${following
-          ? 'border border-indigo-600 text-indigo-600 hover:bg-red-50 hover:border-red-400 hover:text-red-500'
+          ? 'border border-red-400 text-red-500 hover:bg-red-50'
           : 'bg-indigo-600 hover:bg-indigo-700 text-white'
         }
       `}
