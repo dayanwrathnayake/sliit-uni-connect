@@ -55,6 +55,8 @@ export default function ClubCard({ club }) {
           <h3 className="text-base font-semibold text-gray-900 leading-tight line-clamp-1">
             {club.name}
           </h3>
+        </div>
+        <div className="mt-1 mb-1.5">
           <CategoryBadge category={club.category} />
         </div>
 

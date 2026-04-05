@@ -3,6 +3,7 @@ package com.sliit.uniconnect.dto;
 import com.sliit.uniconnect.model.ClubCategory;
 import com.sliit.uniconnect.model.ClubStatus;
 import com.sliit.uniconnect.model.FacultyEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,8 +32,10 @@ public class ClubResponseDTO {
     private LocalDateTime createdAt;
 
     /** True if the currently authenticated user follows this club. */
+    @JsonProperty("isFollowing")
     private boolean isFollowing;
 
     /** True if the currently authenticated user is the admin of this club. */
+    @JsonProperty("isAdmin")
     private boolean isAdmin;
 }

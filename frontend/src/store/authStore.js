@@ -59,8 +59,17 @@ const useAuthStore = create(
     {
       name: 'sliit-auth', // localStorage key
       storage: createJSONStorage(() => localStorage),
-      // Only persist the refreshToken — access token stays in memory only.
-      partialize: (state) => ({ refreshToken: state.refreshToken }),
+      // Persist: refreshToken (required for session restore) + role/userType (required for
+      // role-based UI rendering during the brief window before the silent token refresh completes).
+      // accessToken is intentionally NOT persisted — it stays in memory only.
+      partialize: (state) => ({
+        refreshToken: state.refreshToken,
+        userType:     state.userType,
+        role:         state.role,
+        userId:       state.userId,
+        displayName:  state.displayName,
+        faculty:      state.faculty,
+      }),
     }
   )
 );

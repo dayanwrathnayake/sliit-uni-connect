@@ -67,6 +67,18 @@ public class AuthController {
     }
 
     /**
+     * POST /api/auth/refresh
+     * Accepts a valid refresh token and returns a new access token + refresh token.
+     * Used by the frontend on page-load to silently restore the session.
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponseDTO> refresh(@RequestBody Map<String, String> body) {
+        String refreshToken = body.get("refreshToken");
+        AuthResponseDTO response = authService.refreshAccessToken(refreshToken);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * GET /api/auth/me
      * Returns the profile of the currently authenticated user.
      * Requires a valid Bearer token — protected by SecurityConfig.

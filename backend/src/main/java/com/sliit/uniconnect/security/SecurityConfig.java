@@ -72,6 +72,15 @@ public class SecurityConfig {
                     // All other club endpoints — any authenticated user
                     .requestMatchers("/api/clubs/**").authenticated()
 
+                    // Feed endpoint — authenticated students only (staff are excluded by design)
+                    .requestMatchers(HttpMethod.GET, "/api/feed").authenticated()
+
+                    // WebSocket handshake — must be public (STOMP auth handled via JWT interceptor)
+                    .requestMatchers("/ws/**").permitAll()
+
+                    // Notification endpoints — authenticated students only
+                    .requestMatchers("/api/notifications", "/api/notifications/**").authenticated()
+
                     // Everything else requires a valid JWT
                     .anyRequest().authenticated()
             )
