@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { followClub, unfollowClub } from '../../api/clubApi';
-import { isStudent } from '../../utils/roles';
+// AFTER: import canFollowClubs instead of isStudent
+import { canFollowClubs } from '../../utils/roles';
 
 /**
  * Follow/Unfollow button — only renders for STUDENT userType.
@@ -25,8 +26,9 @@ export default function FollowButton({ clubId, initialIsFollowing, followerCount
     setCount(followerCount ?? 0);
   }, [initialIsFollowing, followerCount]);
 
-  // Only students can follow
-  if (!isStudent(store)) return null;
+  // BEFORE: if (!isStudent(store)) return null;
+  // AFTER: block staff only — CLUB_ADMIN is still a student-side user
+  if (!canFollowClubs(store)) return null;
 
   async function handleToggle() {
     if (loading) return;

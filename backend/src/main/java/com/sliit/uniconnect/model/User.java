@@ -45,6 +45,10 @@ public class User {
     @Builder.Default
     private int points = 0;
 
+    /** Soft-deactivate flag — admin can disable login without deleting the account. */
+    @Builder.Default
+    private boolean isActive = true;
+
     @Builder.Default
     private boolean isEmailVerified = false;
 

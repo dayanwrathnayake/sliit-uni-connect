@@ -35,7 +35,7 @@ export default function FeedPost({ post, showClubLabel = true }) {
     content:          post.content,
     imageUrl:         post.imageUrl,
     likeCount,
-    likedByCurrentUser: liked,
+    likedByMe: liked,
     createdAt:        post.createdAt,
     authorName:       post.clubName,
     authorAvatarUrl:  post.clubProfilePicUrl,
