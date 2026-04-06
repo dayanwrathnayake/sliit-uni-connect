@@ -34,7 +34,13 @@ export default function StaffLoginPage() {
         profilePicUrl: null,
       });
 
-      navigate('/admin/clubs/pending');
+      // REMOVE THIS: navigate('/admin/clubs/pending');
+      // ADD THIS: route by role
+      if (payload.role === 'SYSTEM_ADMIN') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/admin/clubs/pending');
+      }
     } catch (err) {
       const msg = err?.response?.data?.error;
       setError(msg || 'Invalid email or password. Please try again.');

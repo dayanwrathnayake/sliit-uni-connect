@@ -26,3 +26,7 @@ export const isDeptLeader = (store) =>
 /** Returns true for SYSTEM_ADMIN or FACULTY_MANAGER */
 export const canApproveClubs = (store) =>
   isSystemAdmin(store) || isFacultyManager(store);
+
+// AFTER: any user from the students collection can follow clubs —
+// CLUB_ADMIN is still a student-side user; only STAFF should be blocked.
+export const canFollowClubs = (store) => store?.userType === 'STUDENT';

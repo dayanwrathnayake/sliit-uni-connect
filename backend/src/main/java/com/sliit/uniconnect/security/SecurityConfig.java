@@ -63,6 +63,10 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET,    "/api/staff/faculty-managers").hasRole("SYSTEM_ADMIN")
                     .requestMatchers(HttpMethod.DELETE, "/api/staff/**").hasRole("SYSTEM_ADMIN")
 
+                    // Admin user management — SYSTEM_ADMIN only
+                    .requestMatchers("/api/admin/users/**").hasRole("SYSTEM_ADMIN")
+                    .requestMatchers("/api/admin/users").hasRole("SYSTEM_ADMIN")
+
                     // Club approval — SYSTEM_ADMIN or FACULTY_MANAGER
                     .requestMatchers(HttpMethod.GET, "/api/clubs/pending")
                             .hasAnyRole("SYSTEM_ADMIN", "FACULTY_MANAGER")

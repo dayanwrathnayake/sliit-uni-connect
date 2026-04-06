@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useClub } from '../hooks/useClub';
 import { likePost } from '../api/clubApi';
-import { isClubAdmin, isStudent } from '../utils/roles';
+import { isStudent } from '../utils/roles';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/common/ToastContainer';
 import CategoryBadge from '../components/clubs/CategoryBadge';
@@ -41,9 +41,9 @@ export default function ClubProfilePage() {
   const [showCreatePost, setShowCreatePost] = useState(false);
 
   // True only if this user is the admin OF THIS specific club
-  const userIsThisClubAdmin = isClubAdmin(store) && store.userId === club?.adminId;
-  // Regular student (not a club admin) — can follow
-  const userCanFollow = isStudent(store) && !isClubAdmin(store);
+  const userIsThisClubAdmin = club?.isAdmin === true;
+  // Any student-side user can follow, except on their own club
+  const userCanFollow = isStudent(store) && !club?.isAdmin;
 
   async function handleLikeToggle(postId) {
     try {

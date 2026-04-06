@@ -297,16 +297,12 @@ public class ClubService {
         }
         verifyClubAdmin(authorId, club);
 
-        String authorName = userRepository.findById(authorId)
-                .map(User::getDisplayName).orElse("Unknown");
-        String authorAvatarUrl = userRepository.findById(authorId)
-                .map(User::getProfilePicUrl).orElse(null);
-
+        // AFTER: posts are published under the club's identity, not the individual admin's name
         ClubPost post = ClubPost.builder()
                 .clubId(clubId)
                 .authorId(authorId)
-                .authorName(authorName)
-                .authorAvatarUrl(authorAvatarUrl)
+                .authorName(club.getName())
+                .authorAvatarUrl(club.getProfilePicUrl())
                 .content(dto.getContent())
                 .imageUrl(dto.getImageUrl())
                 .createdAt(LocalDateTime.now())
