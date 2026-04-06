@@ -1,118 +1,122 @@
-import { useAuth } from '../hooks/useAuth';
-import { useAuthStore } from '../store/authStore';
+import { useEffect, useRef } from 'react';
+import PageLayout from '../components/layout/PageLayout';
+import FeedPost from '../components/feed/FeedPost';
+import FeedEmptyState from '../components/feed/FeedEmptyState';
+import FeedLoadingSkeleton from '../components/feed/FeedLoadingSkeleton';
+import UpcomingEventsWidget from '../components/widgets/UpcomingEventsWidget';
+import QuickStatsWidget from '../components/widgets/QuickStatsWidget';
+import { useFeed } from '../hooks/useFeed';
+import { useUpcomingEvents } from '../hooks/useUpcomingEvents';
 
-const PLACEHOLDER_CARDS = [
-  {
-    id: 'feed',
-    title: 'Feed',
-    emoji: '📰',
-    description: 'Campus news, events, and posts from your network.',
-  },
-  {
-    id: 'calendar',
-    title: 'Calendar',
-    emoji: '📅',
-    description: 'Upcoming events, deadlines, and club meetings.',
-  },
-  {
-    id: 'shop',
-    title: 'Shop',
-    emoji: '🛍️',
-    description: 'Buy and sell with your fellow SLIIT students.',
-  },
-];
+function RefreshIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round"
+        d="M4 4v5h5M20 20v-5h-5M4.93 15A9 9 0 1 0 6.7 6.7L4 4" />
+    </svg>
+  );
+}
 
 export default function HomePage() {
-  const { logout } = useAuth();
-  const { displayName, role, faculty } = useAuthStore();
+  const feed = useFeed();
+  const { events, loading: eventsLoading } = useUpcomingEvents();
+  const sentinelRef = useRef(null);
 
-  const roleBadgeColor = {
-    SYSTEM_ADMIN: 'bg-red-500/15 text-red-400 border-red-500/20',
-    FACULTY_MANAGER: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
-    DEPT_LEADER: 'bg-violet-500/15 text-violet-400 border-violet-500/20',
-    CLUB_ADMIN: 'bg-sky-500/15 text-sky-400 border-sky-500/20',
-    STUDENT: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
-  }[role] || 'bg-slate-500/15 text-slate-400 border-slate-500/20';
+  // Load initial feed on mount
+  useEffect(() => {
+    feed.refresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Infinite scroll — IntersectionObserver on sentinel div
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && feed.hasMore && !feed.loading) {
+          feed.loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [feed]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      {/* ── Navbar ── */}
-      <nav className="border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-bold text-sm">S</span>
-            </div>
-            <span className="text-lg font-bold text-white tracking-tight hidden sm:block">
-              SLIIT UNI Connect
-            </span>
-          </div>
+    <PageLayout>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col md:flex-row gap-6">
 
-          {/* User controls */}
-          <div className="flex items-center gap-3">
-            {/* Role badge */}
-            <span className={`hidden sm:inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${roleBadgeColor}`}>
-              {role}
-            </span>
-            {/* Display name */}
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-xs font-bold">
-                  {displayName?.charAt(0)?.toUpperCase() ?? '?'}
-                </span>
+            {/* ─── LEFT: Feed ─────────────────────────────────────────── */}
+            <div className="flex-1 min-w-0">
+              {/* Feed header */}
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-xl font-semibold text-gray-800">Your Feed</h1>
+                <button
+                  onClick={feed.refresh}
+                  disabled={feed.loading}
+                  className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-indigo-600 transition-colors disabled:opacity-40"
+                  title="Refresh feed"
+                >
+                  <RefreshIcon />
+                  Refresh
+                </button>
               </div>
-              <span className="text-sm font-medium text-slate-200 hidden sm:block">{displayName}</span>
+
+              {/* Error state */}
+              {feed.error && (
+                <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4 text-sm text-red-600">
+                  {feed.error}
+                </div>
+              )}
+
+              {/* Feed content */}
+              {feed.loading && feed.posts.length === 0 ? (
+                <FeedLoadingSkeleton />
+              ) : !feed.loading && feed.posts.length === 0 ? (
+                <FeedEmptyState />
+              ) : (
+                <>
+                  <div className="space-y-4">
+                    {feed.posts.map((post) => (
+                      <FeedPost key={post.postId} post={post} />
+                    ))}
+                  </div>
+
+                  {/* Sentinel for infinite scroll */}
+                  <div ref={sentinelRef} className="h-4" />
+
+                  {/* Loading more spinner */}
+                  {feed.loading && (
+                    <div className="flex justify-center py-4">
+                      <div className="animate-spin h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full" />
+                    </div>
+                  )}
+
+                  {/* End of feed */}
+                  {!feed.hasMore && feed.posts.length > 0 && !feed.loading && (
+                    <p className="text-center text-sm text-gray-400 py-6">
+                      You're all caught up! 🎉
+                    </p>
+                  )}
+                </>
+              )}
             </div>
-            {/* Logout */}
-            <button
-              onClick={logout}
-              className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-400 hover:bg-slate-800 hover:text-white transition-all"
-            >
-              Logout
-            </button>
+
+            {/* ─── RIGHT: Sidebar ─────────────────────────────────────── */}
+            <aside className="w-full md:w-80 flex-shrink-0 space-y-4">
+              <QuickStatsWidget />
+              <UpcomingEventsWidget events={events} loading={eventsLoading} />
+            </aside>
+
           </div>
         </div>
-      </nav>
-
-      {/* ── Main content ── */}
-      <main className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
-        {/* Welcome banner */}
-        <div className="mb-10 rounded-2xl bg-gradient-to-br from-indigo-600/20 to-violet-600/10 border border-indigo-500/20 p-6 sm:p-8">
-          <p className="text-indigo-400 text-sm font-medium mb-1">Welcome back 👋</p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">
-            {displayName ?? 'Student'}
-          </h2>
-          {faculty && (
-            <p className="text-slate-400 text-sm">
-              {faculty.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-            </p>
-          )}
-        </div>
-
-        {/* Coming-soon cards */}
-        <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4">
-          Features coming soon
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {PLACEHOLDER_CARDS.map((card) => (
-            <div
-              key={card.id}
-              className="group rounded-2xl bg-slate-900 border border-slate-800 p-6 hover:border-indigo-500/30 transition-all duration-200 cursor-default"
-            >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-800 text-2xl group-hover:bg-indigo-600/20 transition">
-                {card.emoji}
-              </div>
-              <h4 className="text-base font-semibold text-white mb-1">{card.title}</h4>
-              <p className="text-slate-500 text-sm mb-4">{card.description}</p>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
-                Coming soon
-              </span>
-            </div>
-          ))}
-        </div>
-      </main>
-    </div>
+      </div>
+    </PageLayout>
   );
 }

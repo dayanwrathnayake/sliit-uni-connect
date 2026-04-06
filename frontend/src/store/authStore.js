@@ -16,6 +16,8 @@ const useAuthStore = create(
       displayName: null,
       role: null,
       faculty: null,
+      userType: null,        // "STUDENT" | "STAFF"
+      profilePicUrl: null,
       isAuthenticated: false,
 
       // ── Actions ────────────────────────────────────────────────────────
@@ -27,11 +29,13 @@ const useAuthStore = create(
       setAuth: (authData) =>
         set({
           accessToken: authData.accessToken,
-          refreshToken: authData.refreshToken,
-          userId: authData.userId,
+          refreshToken: authData.refreshToken ?? null,
+          userId: authData.userId ?? null,
           displayName: authData.displayName,
           role: authData.role,
-          faculty: authData.faculty,
+          faculty: authData.faculty ?? null,
+          userType: authData.userType ?? 'STUDENT',
+          profilePicUrl: authData.profilePicUrl ?? null,
           isAuthenticated: true,
         }),
 
@@ -47,14 +51,25 @@ const useAuthStore = create(
           displayName: null,
           role: null,
           faculty: null,
+          userType: null,
+          profilePicUrl: null,
           isAuthenticated: false,
         }),
     }),
     {
       name: 'sliit-auth', // localStorage key
       storage: createJSONStorage(() => localStorage),
-      // Only persist the refreshToken — access token stays in memory only.
-      partialize: (state) => ({ refreshToken: state.refreshToken }),
+      // Persist: refreshToken (required for session restore) + role/userType (required for
+      // role-based UI rendering during the brief window before the silent token refresh completes).
+      // accessToken is intentionally NOT persisted — it stays in memory only.
+      partialize: (state) => ({
+        refreshToken: state.refreshToken,
+        userType:     state.userType,
+        role:         state.role,
+        userId:       state.userId,
+        displayName:  state.displayName,
+        faculty:      state.faculty,
+      }),
     }
   )
 );

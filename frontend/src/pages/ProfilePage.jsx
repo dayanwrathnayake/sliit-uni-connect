@@ -1,0 +1,230 @@
+import { useEffect, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import api from '../api/axios';
+import { useAuthStore } from '../store/authStore';
+import PageLayout from '../components/layout/PageLayout';
+import { avatarColour, initials } from '../components/profile/ProfileCard';
+
+// ── Faculty / Role display maps ───────────────────────────────────────────
+const FACULTY_LABEL = {
+  COMPUTING: 'Faculty of Computing',
+  ENGINEERING: 'Faculty of Engineering',
+  BUSINESS: 'Faculty of Business',
+  HUMANITIES_AND_SCIENCE: 'Faculty of Humanities & Science',
+};
+const FACULTY_STYLE = {
+  COMPUTING:            'bg-indigo-500/15 text-indigo-400 border-indigo-500/20',
+  ENGINEERING:          'bg-orange-500/15 text-orange-400 border-orange-500/20',
+  BUSINESS:             'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
+  HUMANITIES_AND_SCIENCE: 'bg-purple-500/15 text-purple-400 border-purple-500/20',
+};
+const ROLE_LABEL = {
+  SYSTEM_ADMIN: 'System Admin', FACULTY_MANAGER: 'Faculty Manager',
+  DEPT_LEADER: 'Dept. Leader', CLUB_ADMIN: 'Club Admin',
+};
+const ROLE_STYLE = {
+  SYSTEM_ADMIN: 'bg-red-500/15 text-red-400 border-red-500/20',
+  FACULTY_MANAGER: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
+  DEPT_LEADER: 'bg-violet-500/15 text-violet-400 border-violet-500/20',
+  CLUB_ADMIN: 'bg-sky-500/15 text-sky-400 border-sky-500/20',
+};
+
+// ── Skeleton loader ───────────────────────────────────────────────────────
+function Skeleton({ className }) {
+  return <div className={`animate-pulse rounded-lg bg-slate-800 ${className}`} />;
+}
+
+function ProfileSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div className="flex gap-6 items-center">
+        <Skeleton className="h-36 w-36 rounded-full flex-shrink-0" />
+        <div className="flex-1 space-y-3">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-4 w-24" />
+        </div>
+      </div>
+      <Skeleton className="h-20 w-full" />
+      <div className="grid grid-cols-3 gap-4">
+        <Skeleton className="h-20" />
+        <Skeleton className="h-20" />
+        <Skeleton className="h-20" />
+      </div>
+    </div>
+  );
+}
+
+// ── Stat box ─────────────────────────────────────────────────────────────
+function StatBox({ label, value, emoji }) {
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+      <p className="text-2xl font-bold text-white mb-0.5">{value}</p>
+      <p className="text-xs text-slate-500">{emoji} {label}</p>
+    </div>
+  );
+}
+
+export default function ProfilePage() {
+  const { userId: rawUserId } = useParams();
+  const { userId: myId } = useAuthStore();
+  const navigate = useNavigate();
+
+  // Resolve "me" alias
+  const userId = rawUserId === 'me' ? myId : rawUserId;
+  const isOwnProfile = userId === myId;
+
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!userId) {
+      navigate('/login', { replace: true });
+      return;
+    }
+    setLoading(true);
+    setError('');
+
+    api.get(`/api/users/${userId}/profile`)
+      .then(({ data }) => setProfile(data))
+      .catch((err) => {
+        setError(err.response?.data?.error || 'Failed to load profile.');
+      })
+      .finally(() => setLoading(false));
+  }, [userId, navigate]);
+
+  const copyReferralCode = () => {
+    if (!profile?.referralCode) return;
+    navigator.clipboard.writeText(profile.referralCode).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const formatDate = (iso) => {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const colour = avatarColour(profile?.displayName || '');
+  const abbr = initials(profile?.displayName || '?');
+
+  return (
+    <PageLayout>
+      {loading && <ProfileSkeleton />}
+
+      {error && (
+        <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-6 text-center">
+          <p className="text-red-400">{error}</p>
+          <Link to="/" className="mt-4 inline-block text-sm text-indigo-400 hover:text-indigo-300">← Go home</Link>
+        </div>
+      )}
+
+      {!loading && profile && (
+        <div className="space-y-6">
+
+          {/* ── Header ── */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+              {/* Avatar */}
+              <div className={`h-36 w-36 rounded-full flex-shrink-0 overflow-hidden ring-4 ring-slate-700 flex items-center justify-center ${colour}`}>
+                {profile.profilePicUrl ? (
+                  <img src={profile.profilePicUrl} alt={profile.displayName} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-5xl font-bold text-white">{abbr}</span>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{profile.displayName}</h1>
+
+                {/* Badges */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {profile.faculty && (
+                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${FACULTY_STYLE[profile.faculty] ?? 'bg-slate-700 text-slate-300'}`}>
+                      {FACULTY_LABEL[profile.faculty] ?? profile.faculty}
+                    </span>
+                  )}
+                  {profile.role && profile.role !== 'STUDENT' && (
+                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${ROLE_STYLE[profile.role] ?? 'bg-slate-700 text-slate-300'}`}>
+                      {ROLE_LABEL[profile.role] ?? profile.role}
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-slate-400 text-sm font-mono mb-1">{profile.studentId}</p>
+                <p className="text-slate-500 text-xs">Member since {formatDate(profile.createdAt)}</p>
+
+                {isOwnProfile && (
+                  <Link
+                    to="/profile/edit"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-600/30 px-4 py-2 text-sm font-medium text-indigo-300 transition-all"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    Edit Profile
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Bio ── */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500 mb-3">About</h2>
+            {profile.bio ? (
+              <p className="text-slate-300 leading-relaxed">{profile.bio}</p>
+            ) : isOwnProfile ? (
+              <Link to="/profile/edit" className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
+                + Add a bio
+              </Link>
+            ) : (
+              <p className="text-slate-600 text-sm italic">No bio yet.</p>
+            )}
+          </div>
+
+          {/* ── Stats ── */}
+          <div className="grid grid-cols-3 gap-4">
+            <StatBox label="Points earned" value={profile.points ?? 0} emoji="🏆" />
+            <StatBox label="Events attended" value={0} emoji="📅" />
+            <StatBox label="Volunteer sessions" value={0} emoji="🤝" />
+          </div>
+
+          {/* ── Referral code (own profile only) ── */}
+          {isOwnProfile && profile.referralCode && (
+            <div className="bg-gradient-to-br from-indigo-600/10 to-violet-600/5 border border-indigo-500/20 rounded-2xl p-6">
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500 mb-1">Your Referral Code</h2>
+              <p className="text-xs text-slate-500 mb-4">
+                Share this code with friends — you both earn bonus points when they volunteer.
+              </p>
+              <div className="flex items-center gap-3">
+                <code className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-lg font-mono font-bold text-indigo-300 tracking-widest text-center">
+                  {profile.referralCode}
+                </code>
+                <button
+                  onClick={copyReferralCode}
+                  className={`flex-shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                    copied
+                      ? 'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400'
+                      : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                  }`}
+                >
+                  {copied ? (
+                    <><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> Copied!</>
+                  ) : (
+                    <><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy</>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+      )}
+    </PageLayout>
+  );
+}

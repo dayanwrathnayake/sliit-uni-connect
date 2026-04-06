@@ -8,8 +8,18 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import HomePage from './pages/HomePage';
+import ProfilePage from './pages/ProfilePage';
+import EditProfilePage from './pages/EditProfilePage';
+import StaffLoginPage from './pages/StaffLoginPage';
+import ClubsDiscoveryPage from './pages/ClubsDiscoveryPage';
+import ClubProfilePage from './pages/ClubProfilePage';
+import EditClubPage from './pages/EditClubPage';
+import ClubApprovalPage from './pages/ClubApprovalPage';
+// ADD THIS
+import NotificationsPage from './pages/notifications/NotificationsPage';
 
-// ── "Coming soon" placeholder element ────────────────────────────────────
+
+// ── "Coming soon" placeholder ─────────────────────────────────────────────
 function ComingSoon({ label }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950">
@@ -27,28 +37,47 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* ── Public routes ───────────────────────────────────────── */}
+          {/* ── Public routes ─────────────────────────────────────────── */}
           <Route path="/login"        element={<LoginPage />} />
           <Route path="/register"     element={<RegisterPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
+          <Route path="/staff/login"  element={<StaffLoginPage />} />
 
-          {/* ── Protected routes ────────────────────────────────────── */}
+          {/* ── Public club pages (viewable without login) ────────────── */}
+          <Route path="/clubs"            element={<ClubsDiscoveryPage />} />
+          <Route path="/clubs/:clubId"    element={<ClubProfilePage />} />
+
+          {/* ── Protected routes ──────────────────────────────────────── */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<HomePage />} />
+            {/* Smart root redirect */}
+            <Route path="/" element={<Navigate to="/home" replace />} />
+            <Route path="/home" element={<HomePage />} />
 
-            <Route path="/clubs"     element={<ComingSoon label="Clubs & Societies" />} />
+            {/* Profile */}
+            <Route path="/profile/edit"  element={<EditProfilePage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
+
+            {/* Club — protected actions */}
+            <Route path="/clubs/:clubId/edit" element={<EditClubPage />} />
+
+            {/* ADD THIS */}
+            <Route path="/notifications" element={<NotificationsPage />} />
+
             <Route path="/events"    element={<ComingSoon label="Events" />} />
             <Route path="/volunteer" element={<ComingSoon label="Volunteer Hub" />} />
             <Route path="/shop"      element={<ComingSoon label="Student Shop" />} />
 
-            {/* Admin — requires SYSTEM_ADMIN role */}
+            {/* Admin — SYSTEM_ADMIN or FACULTY_MANAGER */}
+            <Route path="/admin/clubs/pending" element={<ClubApprovalPage />} />
+
+            {/* Legacy admin route */}
             <Route element={<RoleProtectedRoute allowedRoles={['SYSTEM_ADMIN']} />}>
               <Route path="/admin" element={<ComingSoon label="Admin Dashboard" />} />
             </Route>
           </Route>
 
-          {/* ── Catch-all — redirect to home ────────────────────────── */}
+          {/* ── Catch-all ────────────────────────────────────────────── */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

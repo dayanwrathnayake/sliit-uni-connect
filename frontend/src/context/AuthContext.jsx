@@ -6,6 +6,25 @@ import { useAuthStore } from '../store/authStore';
 
 export const AuthContext = createContext(null);
 
+const BASE_URL = 'http://localhost:8080';
+
+/**
+ * After we have a valid accessToken + userId, fetch the full user profile
+ * from /api/users/{userId}/profile and merge profilePicUrl into the Zustand store.
+ * This ensures the Navbar avatar is always correct across refreshes.
+ */
+async function hydrateProfilePic(userId, setAuth) {
+  try {
+    const { data } = await api.get(`/api/users/${userId}/profile`);
+    if (data.profilePicUrl) {
+      // Merge — only update profilePicUrl; don't touch tokens or other fields
+      useAuthStore.setState((s) => ({ ...s, profilePicUrl: data.profilePicUrl }));
+    }
+  } catch {
+    // Non-fatal — worst case the navbar shows initials instead
+  }
+}
+
 export function AuthProvider({ children }) {
   const { setAuth, clearAuth, refreshToken } = useAuthStore();
   const [user, setUser] = useState(null);
@@ -13,8 +32,6 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
   // ── Silent session restore on page refresh ──────────────────────────────
-  // If a refreshToken exists in localStorage (rehydrated by Zustand persist),
-  // call the refresh endpoint to get a new access token and restore the session.
   useEffect(() => {
     const restoreSession = async () => {
       if (!refreshToken) {
@@ -23,20 +40,21 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const { data } = await axios.post(
-          'http://localhost:8080/api/auth/refresh',
-          { refreshToken }
-        );
+        const { data } = await axios.post(`${BASE_URL}/api/auth/refresh`, { refreshToken });
 
-        setAuth(data);
+        // Pass userType explicitly — students always restore as STUDENT
+        setAuth({ ...data, userType: 'STUDENT' });
         setUser({
-          userId: data.userId,
+          userId:      data.userId,
           displayName: data.displayName,
-          role: data.role,
-          faculty: data.faculty,
+          role:        data.role,
+          faculty:     data.faculty,
+          userType:    'STUDENT',
         });
+
+        // Fetch full profile to restore profilePicUrl (not in refresh response)
+        await hydrateProfilePic(data.userId, setAuth);
       } catch {
-        // Refresh token is expired or invalid — clear everything silently
         clearAuth();
       } finally {
         setIsLoading(false);
@@ -45,19 +63,24 @@ export function AuthProvider({ children }) {
 
     restoreSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount only
+  }, []);
 
   // ── Login ────────────────────────────────────────────────────────────────
   const login = useCallback(
     async (email, password) => {
       const { data } = await api.post('/api/auth/login', { email, password });
+
       setAuth(data);
       setUser({
-        userId: data.userId,
+        userId:      data.userId,
         displayName: data.displayName,
-        role: data.role,
-        faculty: data.faculty,
+        role:        data.role,
+        faculty:     data.faculty,
       });
+
+      // Populate profilePicUrl right after login so Navbar shows the photo immediately
+      await hydrateProfilePic(data.userId, setAuth);
+
       return data;
     },
     [setAuth]

@@ -104,8 +104,8 @@ public class AuthService {
         emailService.sendVerificationEmail(savedUser.getEmail(), emailVerificationToken);
 
         // 9. Return tokens
-        String accessToken  = jwtUtil.generateAccessToken(savedUser.getId(), savedUser.getRole().name());
-        String refreshToken = jwtUtil.generateRefreshToken(savedUser.getId());
+        String accessToken  = jwtUtil.generateAccessToken(savedUser.getId(), savedUser.getRole().name(), "STUDENT");
+        String refreshToken = jwtUtil.generateRefreshToken(savedUser.getId(), "STUDENT");
 
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)
@@ -131,12 +131,42 @@ public class AuthService {
         }
 
         // 3. Generate tokens
-        String accessToken  = jwtUtil.generateAccessToken(user.getId(), user.getRole().name());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getId());
+        String accessToken  = jwtUtil.generateAccessToken(user.getId(), user.getRole().name(), "STUDENT");
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId(), "STUDENT");
 
         return AuthResponseDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .userId(user.getId())
+                .displayName(user.getDisplayName())
+                .role(user.getRole().name())
+                .faculty(user.getFaculty().name())
+                .build();
+    }
+
+    // ── Refresh Token ─────────────────────────────────────────────────────────
+
+    public AuthResponseDTO refreshAccessToken(String refreshToken) {
+
+        // 1. Validate the token
+        if (!jwtUtil.isTokenValid(refreshToken)) {
+            throw new InvalidCredentialsException("Invalid or expired refresh token");
+        }
+
+        // 2. Extract userId from the token
+        String userId = jwtUtil.extractUserId(refreshToken);
+
+        // 3. Find the user
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new InvalidCredentialsException("User not found"));
+
+        // 4. Issue a brand-new access token + refresh token
+        String newAccessToken  = jwtUtil.generateAccessToken(userId, user.getRole().name(), "STUDENT");
+        String newRefreshToken = jwtUtil.generateRefreshToken(userId, "STUDENT");
+
+        return AuthResponseDTO.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
                 .userId(user.getId())
                 .displayName(user.getDisplayName())
                 .role(user.getRole().name())
