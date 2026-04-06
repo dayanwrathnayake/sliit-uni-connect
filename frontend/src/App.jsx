@@ -17,6 +17,9 @@ import EditClubPage from './pages/EditClubPage';
 import ClubApprovalPage from './pages/ClubApprovalPage';
 // ADD THIS
 import NotificationsPage from './pages/notifications/NotificationsPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import FacultyManagersPage from './pages/admin/FacultyManagersPage';
 
 
 // ── "Coming soon" placeholder ─────────────────────────────────────────────
@@ -63,6 +66,11 @@ export default function App() {
 
             {/* ADD THIS */}
             <Route path="/notifications" element={<NotificationsPage />} />
+
+            {/* Admin dashboard routes */}
+            <Route path="/admin/dashboard"          element={<AdminDashboardPage />} />
+            <Route path="/admin/users"              element={<AdminUsersPage />} />
+            <Route path="/admin/faculty-managers"   element={<FacultyManagersPage />} />
 
             <Route path="/events"    element={<ComingSoon label="Events" />} />
             <Route path="/volunteer" element={<ComingSoon label="Volunteer Hub" />} />

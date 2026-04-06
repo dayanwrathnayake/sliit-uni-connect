@@ -28,4 +28,7 @@ public interface ClubRepository extends MongoRepository<Club, String> {
 
     /** Case-insensitive name search within a given status. */
     List<Club> findByNameContainingIgnoreCaseAndStatus(String name, ClubStatus status);
+
+    /** Count how many clubs a user follows — for admin user detail. */
+    long countByFollowerIdsContaining(String userId);
 }

@@ -130,6 +130,11 @@ public class AuthService {
             throw new InvalidCredentialsException("Invalid email or password");
         }
 
+        // ADD THIS: block deactivated accounts
+        if (!user.isActive()) {
+            throw new InvalidCredentialsException("Account is deactivated. Please contact admin.");
+        }
+
         // 3. Generate tokens
         String accessToken  = jwtUtil.generateAccessToken(user.getId(), user.getRole().name(), "STUDENT");
         String refreshToken = jwtUtil.generateRefreshToken(user.getId(), "STUDENT");

@@ -1,5 +1,6 @@
 package com.sliit.uniconnect.repository;
 
+import com.sliit.uniconnect.model.Role;
 import com.sliit.uniconnect.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -25,5 +26,13 @@ public interface UserRepository extends MongoRepository<User, String> {
     // ── Week 4: user search ──────────────────────────────────────────────────
     List<User> findByDisplayNameContainingIgnoreCaseOrStudentIdContainingIgnoreCase(
             String displayName, String studentId);
+
+    // ── Admin stats ──────────────────────────────────────────────────────────
+    long countByIsActiveTrue();
+    long countByIsActiveFalse();
+    long countByIsEmailVerifiedTrue();
+    long countByIsEmailVerifiedFalse();
+    long countByRole(Role role);
+    List<User> findAllByOrderByCreatedAtDesc();
 }
 

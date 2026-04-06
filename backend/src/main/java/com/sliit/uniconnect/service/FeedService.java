@@ -41,24 +41,30 @@ public class FeedService {
      */
     public Page<FeedPostResponseDTO> getFeed(String currentUserId, int page, int size) {
 
-        // 1. Find all approved clubs the user follows
+        // 1. Find all approved clubs the user follows OR admins
         List<Club> allApproved = clubRepository.findByStatus(ClubStatus.APPROVED);
-        List<Club> followedClubs = allApproved.stream()
-                .filter(club -> club.getFollowerIds() != null
-                        && club.getFollowerIds().contains(currentUserId))
+
+        // BEFORE: only clubs where the user is a follower
+        // AFTER: also include the club the user admins — Club Admins are not in their
+        //        own followerIds list but still need to see their club's posts in the feed.
+        List<Club> relevantClubs = allApproved.stream()
+                .filter(club ->
+                        (club.getFollowerIds() != null && club.getFollowerIds().contains(currentUserId))
+                        || currentUserId.equals(club.getAdminId()))
                 .collect(Collectors.toList());
 
-        if (followedClubs.isEmpty()) {
+        if (relevantClubs.isEmpty()) {
             return new PageImpl<>(Collections.emptyList(),
                     PageRequest.of(page, size), 0);
         }
 
         // 2. Build a lookup map: clubId → Club (for enriching posts)
-        Map<String, Club> clubMap = followedClubs.stream()
+        Map<String, Club> clubMap = relevantClubs.stream()
                 .collect(Collectors.toMap(Club::getId, c -> c));
 
-        List<String> followedClubIds = followedClubs.stream()
+        List<String> followedClubIds = relevantClubs.stream()
                 .map(Club::getId)
+                .distinct()
                 .collect(Collectors.toList());
 
         // 3. Fetch all posts from those clubs, sorted newest-first
