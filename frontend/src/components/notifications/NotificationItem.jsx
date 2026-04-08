@@ -6,8 +6,8 @@ function formatTimeAgo(isoString) {
   const now = new Date();
   const seconds = Math.floor((now - date) / 1000);
 
-  if (seconds < 60)  return 'just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 60)   return 'just now';
+  if (seconds < 3600)  return `${Math.floor(seconds / 60)}m ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
   return date.toLocaleDateString();
@@ -27,20 +27,15 @@ export default function NotificationItem({ notification, onMarkRead }) {
   return (
     <div
       onClick={handleClick}
-      className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-gray-50
+      className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors
         ${!isRead
-          ? 'bg-indigo-50 border-l-2 border-indigo-400'
-          : 'bg-white border-l-2 border-transparent'
+          ? 'bg-indigo-50 dark:bg-indigo-900/20 border-l-2 border-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/30'
+          : 'bg-white dark:bg-slate-800 border-l-2 border-transparent hover:bg-gray-50 dark:hover:bg-slate-700'
         }`}
     >
-      {/* Actor avatar */}
       <div className="flex-shrink-0">
         {actorImageUrl ? (
-          <img
-            src={actorImageUrl}
-            alt={actorName}
-            className="w-8 h-8 rounded-full object-cover"
-          />
+          <img src={actorImageUrl} alt={actorName} className="w-8 h-8 rounded-full object-cover" />
         ) : (
           <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center">
             <span className="text-white text-xs font-bold">{firstLetter}</span>
@@ -48,15 +43,13 @@ export default function NotificationItem({ notification, onMarkRead }) {
         )}
       </div>
 
-      {/* Message + time */}
       <div className="flex-1 min-w-0">
-        <p className={`text-sm text-gray-800 leading-snug ${!isRead ? 'font-medium' : 'font-normal'}`}>
+        <p className={`text-sm leading-snug ${!isRead ? 'font-medium text-gray-800 dark:text-slate-100' : 'font-normal text-gray-700 dark:text-slate-300'}`}>
           {message}
         </p>
-        <p className="text-xs text-gray-400 mt-0.5">{formatTimeAgo(createdAt)}</p>
+        <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{formatTimeAgo(createdAt)}</p>
       </div>
 
-      {/* Unread dot */}
       <div className="flex-shrink-0 pt-1">
         {!isRead ? (
           <div className="w-2 h-2 rounded-full bg-indigo-500" />

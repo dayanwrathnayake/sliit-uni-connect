@@ -2,21 +2,37 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useAuthStore } from '../../store/authStore';
+import { useThemeStore } from '../../store/themeStore';
 import { avatarColour, initials } from '../profile/ProfileCard';
 import { canApproveClubs, isStudent } from '../../utils/roles';
-// ADD THIS
 import NotificationBell from '../notifications/NotificationBell';
+
+function SunIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+    </svg>
+  );
+}
 
 export default function Navbar() {
   const { logout } = useAuth();
   const store = useAuthStore();
   const { displayName, profilePicUrl, isAuthenticated } = store;
+  const { isDark, toggleTheme } = useThemeStore();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -31,22 +47,18 @@ export default function Navbar() {
   const abbr = initials(displayName || '?');
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/90 backdrop-blur-sm">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <nav className="sticky top-0 z-50 border-b border-slate-800 bg-slate-900/95 backdrop-blur-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
 
           {/* ── Logo ── */}
-          <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
-            <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-              <span className="text-white font-bold text-sm">S</span>
-            </div>
-            <span className="text-lg font-bold text-white tracking-tight hidden sm:block">
-              SLIIT UNI Connect
-            </span>
+          <Link to="/" className="flex items-center gap-0.5 flex-shrink-0">
+            <span className="text-xl font-black text-amber-400 tracking-tight">SLIIT</span>
+            <span className="text-xl font-black text-white tracking-tight"> UNI CONNECT</span>
           </Link>
 
           {/* ── Desktop nav links + right side ── */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2">
             {isAuthenticated && (
               <div className="flex items-center gap-1">
                 <Link
@@ -71,12 +83,22 @@ export default function Navbar() {
                 )}
               </div>
             )}
-            {/* ADD THIS: bell icon for students */}
+
+            {/* Dark/Light toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              aria-label="Toggle theme"
+            >
+              {isDark ? <SunIcon /> : <MoonIcon />}
+            </button>
+
+            {/* Notification bell (students only) */}
             {isAuthenticated && isStudent(store) && <NotificationBell />}
 
             {isAuthenticated ? (
               <div className="relative" ref={dropdownRef}>
-                {/* Avatar + name button */}
                 <button
                   onClick={() => setDropdownOpen((v) => !v)}
                   className="flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 hover:bg-slate-800 transition-all"
@@ -96,7 +118,6 @@ export default function Navbar() {
                   </svg>
                 </button>
 
-                {/* Dropdown menu */}
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 rounded-xl bg-slate-800 border border-slate-700 shadow-xl py-1 overflow-hidden">
                     <Link
@@ -144,22 +165,31 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* ── Mobile hamburger ── */}
-          <button
-            className="sm:hidden p-2 rounded-lg text-slate-400 hover:bg-slate-800 transition-colors"
-            onClick={() => setMobileOpen((v) => !v)}
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? (
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
-          </button>
+          {/* ── Mobile right side ── */}
+          <div className="sm:hidden flex items-center gap-1">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              aria-label="Toggle theme"
+            >
+              {isDark ? <SunIcon /> : <MoonIcon />}
+            </button>
+            <button
+              className="p-2 rounded-lg text-slate-400 hover:bg-slate-800 transition-colors"
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -178,6 +208,7 @@ export default function Navbar() {
                 </div>
                 <span className="text-sm font-medium text-white">{displayName}</span>
               </div>
+              <Link to="/home" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Home</Link>
               <Link to="/profile/me" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">My Profile</Link>
               <Link to="/clubs" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Clubs</Link>
               {canApproveClubs(store) && (
