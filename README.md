@@ -1,6 +1,6 @@
 # SLIIT UNI Connect
 
-A social platform for SLIIT university students — clubs, feeds, events, and notifications, all in one place.
+A social platform for SLIIT university students - clubs, feeds, events, and notifications, all in one place.
 
 ---
 
