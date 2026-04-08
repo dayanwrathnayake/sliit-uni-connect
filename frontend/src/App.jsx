@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { useThemeStore } from './store/themeStore';
 import ProtectedRoute from './components/ProtectedRoute';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
 
@@ -36,6 +38,10 @@ function ComingSoon({ label }) {
 }
 
 export default function App() {
+  // Apply persisted theme class to <html> on mount (prevents flash)
+  const { isDark, applyTheme } = useThemeStore();
+  useEffect(() => { applyTheme(isDark); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <BrowserRouter>
       <AuthProvider>

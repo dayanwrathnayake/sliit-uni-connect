@@ -46,6 +46,13 @@ public class SecurityConfig {
                     // Preflight
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                    // Swagger / OpenAPI UI
+                    .requestMatchers(
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**"
+                    ).permitAll()
+
                     // Public student auth
                     .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
