@@ -1,6 +1,7 @@
-# SLIIT UNI Connect
+# SLIIT UNI CONNECT
+<img width="241" height="53" alt="Screenshot 2026-03-27 180852" src="https://github.com/user-attachments/assets/5632ab22-7c0d-4d14-9ad3-9cec81aea99a" />
 
-A social platform for SLIIT university students — clubs, feeds, events, and notifications, all in one place.
+A social platform for SLIIT university students - clubs, feeds, events, and notifications, all in one place.
 
 ---
 
