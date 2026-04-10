@@ -48,7 +48,7 @@ export default function UpcomingEventsWidget({ events = [], loading }) {
         <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-4">No upcoming events</p>
       ) : (
         <div className="divide-y divide-gray-50 dark:divide-slate-700/50">
-          {events.slice(0, 5).map((event) => {
+          {events.slice(0, 3).map((event) => {
             const { day, month } = formatDateBlock(event.date);
             const c = colors(event.color);
             return (

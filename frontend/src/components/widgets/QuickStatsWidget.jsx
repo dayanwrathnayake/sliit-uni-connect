@@ -25,6 +25,23 @@ function TrophyIcon() {
   );
 }
 
+/* Point tiers */
+const TIERS = [
+  { label: 'Bronze', min: 0,    max: 199,  color: 'from-amber-700 to-amber-500',   textColor: 'text-amber-600 dark:text-amber-500',   bg: 'bg-amber-50 dark:bg-amber-900/20' },
+  { label: 'Silver', min: 200,  max: 499,  color: 'from-slate-400 to-slate-300',   textColor: 'text-slate-500 dark:text-slate-400',   bg: 'bg-slate-50 dark:bg-slate-700/30' },
+  { label: 'Gold',   min: 500,  max: 999,  color: 'from-yellow-500 to-amber-400',  textColor: 'text-yellow-600 dark:text-yellow-400', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
+  { label: 'Plat',   min: 1000, max: 2000, color: 'from-indigo-400 to-violet-400', textColor: 'text-indigo-500 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
+];
+
+function getTier(pts) {
+  return TIERS.find((t) => pts >= t.min && pts <= t.max) ?? TIERS[TIERS.length - 1];
+}
+
+function getNextTier(pts) {
+  const idx = TIERS.findIndex((t) => pts >= t.min && pts <= t.max);
+  return idx !== -1 && idx < TIERS.length - 1 ? TIERS[idx + 1] : null;
+}
+
 export default function QuickStatsWidget() {
   const store = useAuthStore();
   const [copied, setCopied] = useState(false);
@@ -41,6 +58,12 @@ export default function QuickStatsWidget() {
       setTimeout(() => setCopied(false), 2000);
     } catch { /* ignore */ }
   }
+
+  const tier     = points !== null ? getTier(points) : null;
+  const nextTier = points !== null ? getNextTier(points) : null;
+  const progress = tier && nextTier
+    ? Math.min(100, Math.round(((points - tier.min) / (nextTier.min - tier.min)) * 100))
+    : 100;
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4">
@@ -67,6 +90,36 @@ export default function QuickStatsWidget() {
           <p className="text-[10px] text-gray-500 dark:text-slate-400 mt-0.5 leading-tight">Rank</p>
         </div>
       </div>
+
+      {/* ── Point tier progress bar ── */}
+      {tier && (
+        <div className={`rounded-lg border border-gray-100 dark:border-slate-700 px-3 py-2.5 mb-3 ${tier.bg}`}>
+          <div className="flex items-center justify-between mb-1.5">
+            <span className={`text-[11px] font-bold uppercase tracking-wider ${tier.textColor}`}>
+              {tier.label}
+            </span>
+            {nextTier ? (
+              <span className="text-[10px] text-gray-400 dark:text-slate-500">
+                {nextTier.min - points} pts to {nextTier.label}
+              </span>
+            ) : (
+              <span className="text-[10px] text-indigo-400">Max tier reached!</span>
+            )}
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-slate-700 overflow-hidden">
+            <div
+              className={`h-full rounded-full bg-gradient-to-r ${tier.color} transition-all duration-500`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          {nextTier && (
+            <div className="flex justify-between mt-1">
+              <span className="text-[9px] text-gray-400 dark:text-slate-600">{tier.min}</span>
+              <span className="text-[9px] text-gray-400 dark:text-slate-600">{nextTier.min}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {referralCode && (
         <div className="flex items-center justify-between gap-2 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 rounded-lg px-3 py-2">
