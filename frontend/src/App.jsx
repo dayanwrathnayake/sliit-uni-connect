@@ -29,6 +29,11 @@ import CheckoutPage from './pages/CheckoutPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import ProductManagement from './pages/admin/ProductManagementPage';
 import OrderManagement from './pages/admin/OrderManagementPage';
+import CalendarView from './pages/CalendarView';
+import EventDetailPage from './pages/EventDetailPage';
+import MyEventsPage from './pages/MyEventsPage';
+import AdminApprovalPage from './pages/admin/AdminApprovalPage';
+import ChatPage from './pages/ChatPage';
 
 
 // ── "Coming soon" placeholder ─────────────────────────────────────────────
@@ -85,7 +90,11 @@ export default function App() {
             <Route path="/admin/users"              element={<AdminUsersPage />} />
             <Route path="/admin/faculty-managers"   element={<FacultyManagersPage />} />
 
-            <Route path="/events"    element={<ComingSoon label="Events" />} />
+            <Route path="/events"           element={<CalendarView />} />
+            <Route path="/events/:id"       element={<EventDetailPage />} />
+            <Route path="/my-events"        element={<MyEventsPage />} />
+            <Route path="/chat"             element={<ChatPage />} />
+            <Route path="/admin/approvals"  element={<AdminApprovalPage />} />
             <Route path="/volunteer" element={<ComingSoon label="Volunteer Hub" />} />
             
             {/* E-Shop Routes */}

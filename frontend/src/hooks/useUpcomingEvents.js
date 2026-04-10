@@ -1,86 +1,40 @@
 import { useState, useEffect } from 'react';
-
-const MOCK_EVENTS = [
-  {
-    id: 'mock1',
-    title: 'SLIIT Freshers Night 2025',
-    date: '2025-07-15',
-    time: '6:00 PM',
-    location: 'SLIIT Main Hall',
-    category: 'Orientation',
-    color: 'indigo',
-  },
-  {
-    id: 'mock2',
-    title: 'IEEE Robotics Workshop',
-    date: '2025-07-22',
-    time: '9:00 AM',
-    location: 'FOC Lab 3',
-    category: 'Workshop',
-    color: 'blue',
-  },
-  {
-    id: 'mock3',
-    title: 'Computing Faculty Sports Meet',
-    date: '2025-08-02',
-    time: '8:00 AM',
-    location: 'SLIIT Grounds',
-    category: 'Sports',
-    color: 'green',
-  },
-  {
-    id: 'mock4',
-    title: 'Hack SLIIT 2025',
-    date: '2025-08-10',
-    time: 'All Day',
-    location: 'FOC Auditorium',
-    category: 'Hackathon',
-    color: 'purple',
-  },
-  {
-    id: 'mock5',
-    title: 'UNI-Connect Launch Event',
-    date: '2025-08-20',
-    time: '3:00 PM',
-    location: 'Main Auditorium',
-    category: 'Special',
-    color: 'coral',
-  },
-];
+import { getUpcomingEvents } from '../api/eventService';
 
 /**
- * Returns upcoming events.
- *
- * ── SWAP POINT ──────────────────────────────────────────────────────────────
- * When Member 2's Events API is ready, remove the mock setTimeout block and
- * replace it with:
- *
- *   import api from '../api/axios';
- *   const { data } = await api.get('/api/events/upcoming?limit=5');
- *   setEvents(data);
- *
- * ────────────────────────────────────────────────────────────────────────────
+ * Returns upcoming events from the real API.
  */
 export function useUpcomingEvents() {
   const [events, setEvents]   = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchEvents = async () => {
+    try {
+      const response = await getUpcomingEvents(5);
+      const data = response.content || response; // Handle both paginated and flat list
+      // Map API fields to the widget's expected format if different
+      const formatted = data.map(e => ({
+        id: e.id,
+        title: e.title,
+        date: new Date(e.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }),
+        time: new Date(e.startDate).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }),
+        location: e.venue,
+        category: e.type.replace('_', ' '),
+        color: e.type === 'CLUB_EVENT' ? 'blue' : 'indigo'
+      }));
+      setEvents(formatted);
+    } catch (err) {
+      console.error('Failed to fetch upcoming events:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let cancelled = false;
-    // Simulate a 300 ms API delay
-    const timer = setTimeout(() => {
-      if (!cancelled) {
-        setEvents(MOCK_EVENTS);
-        setLoading(false);
-      }
-    }, 300);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
+    fetchEvents();
   }, []);
 
-  return { events, loading };
+  return { events, loading, refresh: fetchEvents };
 }
 
 export default useUpcomingEvents;

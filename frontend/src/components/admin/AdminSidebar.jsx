@@ -58,6 +58,7 @@ const navItems = [
   { to: '/admin/clubs/pending',     label: 'Club Approvals',      Icon: CheckCircleIcon },
   { to: '/admin/shop/products',     label: 'Product Management',  Icon: CubeIcon },
   { to: '/admin/shop/orders',       label: 'Order Management',    Icon: ShoppingBagIcon },
+  { to: '/admin/approvals',         label: 'Event Approvals',     Icon: CheckCircleIcon },
 ];
 
 const activeClass   = 'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg bg-indigo-600 text-white';

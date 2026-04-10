@@ -81,6 +81,18 @@ export default function Navbar() {
                   Home
                 </Link>
                 <Link
+                  to="/events"
+                  className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  Calendar
+                </Link>
+                <Link
+                  to="/my-events"
+                  className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  My Events
+                </Link>
+                <Link
                   to="/clubs"
                   className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
                 >
@@ -91,6 +103,10 @@ export default function Navbar() {
                   className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
                 >
                   E-Shop
+                  to="/chat"
+                  className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  Chat
                 </Link>
                 {canApproveClubs(store) && (
                   <Link

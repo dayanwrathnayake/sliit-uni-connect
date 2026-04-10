@@ -1,0 +1,179 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getEventById, registerForEvent, unregisterFromEvent, submitForApproval } from '../api/eventService';
+import { useAuthStore } from '../store/authStore';
+import PageLayout from '../components/layout/PageLayout';
+import ChatDrawer from '../components/chat/ChatDrawer';
+
+export default function EventDetailPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { userId, role, userType } = useAuthStore();
+  
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchEvent = async () => {
+    try {
+      const data = await getEventById(id);
+      setEvent(data);
+    } catch (err) {
+      setError('Event not found or failed to load');
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvent();
+  }, [id]);
+
+  const handleRegister = async () => {
+    setIsRefreshing(true);
+    try {
+      await registerForEvent(id);
+      await fetchEvent();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Registration failed');
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleUnregister = async () => {
+    setIsRefreshing(true);
+    try {
+      await unregisterFromEvent(id);
+      await fetchEvent();
+    } catch (err) {
+      alert('Failed to unregister');
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleSubmitApproval = async () => {
+    setIsRefreshing(true);
+    try {
+      await submitForApproval(id);
+      await fetchEvent();
+    } catch (err) {
+      alert('Failed to submit for approval');
+      setIsRefreshing(false);
+    }
+  };
+
+  if (loading) return <PageLayout><div className="p-10 text-center">Loading event...</div></PageLayout>;
+  if (error) return <PageLayout><div className="p-10 text-center text-red-500">{error}</div></PageLayout>;
+
+  const isCreator = event.createdBy === userId;
+  const isRegistered = event.registeredUserIds?.includes(userId);
+  const canRegister = event.status === 'PUBLISHED' && !isRegistered;
+  const isFull = event.registeredCount >= event.capacity;
+
+  return (
+    <PageLayout>
+      <div className="max-w-4xl mx-auto p-4 md:p-8">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl">
+          {/* Header Image Placeholder */}
+          <div className="h-64 bg-gradient-to-r from-blue-600 to-indigo-700 flex items-center justify-center text-white">
+             <div className="text-center">
+                <span className="text-6xl mb-2 block">📅</span>
+                <h1 className="text-3xl font-bold px-4">{event.title}</h1>
+             </div>
+          </div>
+
+          <div className="p-6 md:p-10 space-y-8">
+            <div className="flex flex-wrap gap-4 items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-6">
+              <div>
+                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold uppercase tracking-wider">
+                  {event.type}
+                </span>
+                <h2 className="text-slate-500 dark:text-slate-400 text-sm mt-2 flex items-center gap-2">
+                   📍 {event.venue}
+                </h2>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                  {event.registeredCount} / {event.capacity}
+                </div>
+                <div className="text-xs text-slate-500 uppercase font-semibold">Registered</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">About this Event</h3>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                  {event.description || 'No description provided.'}
+                </p>
+              </div>
+
+              <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+                <h3 className="text-sm font-bold text-slate-500 uppercase mb-4">Event Schedule</h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-xs text-blue-500 font-bold uppercase">Starts</div>
+                    <div className="text-lg text-slate-900 dark:text-white font-semibold">
+                      {new Date(event.startDate).toLocaleString()}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-red-500 font-bold uppercase">Ends</div>
+                    <div className="text-lg text-slate-900 dark:text-white font-semibold">
+                      {new Date(event.endDate).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+              {canRegister && !isFull && (
+                <button
+                  onClick={handleRegister}
+                  disabled={isRefreshing}
+                  className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 transition-all disabled:opacity-50"
+                >
+                  Join Event
+                </button>
+              )}
+              {isRegistered && (
+                <button
+                  onClick={handleUnregister}
+                  disabled={isRefreshing}
+                  className="px-8 py-3 bg-slate-200 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-700 dark:text-white hover:text-red-600 transition-all font-bold rounded-xl disabled:opacity-50"
+                >
+                  Cancel Registration
+                </button>
+              )}
+              {isCreator && event.status === 'DRAFT' && (
+                <button
+                  onClick={handleSubmitApproval}
+                  disabled={isRefreshing}
+                  className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all disabled:opacity-50"
+                >
+                  Submit for Approval
+                </button>
+              )}
+              
+              <div className="ml-auto flex items-center gap-4">
+                 <span className={`px-4 py-2 rounded-lg text-xs font-bold ${
+                   event.status === 'PUBLISHED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                   event.status === 'REJECTED' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                   'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                 }`}>
+                   {event.status}
+                 </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Community Chat for Event */}
+      <ChatDrawer eventId={event.id} eventName={event.title} />
+    </PageLayout>
+  );
+}
