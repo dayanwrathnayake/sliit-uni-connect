@@ -94,20 +94,19 @@ public class JwtUtil {
         if (userType != null) claims.put("userType", userType);
 
         return Jwts.builder()
-                .subject(userId)
-                .claims(claims)
-                .subject(userId)          // re-set subject after .claims() replaces the map
-                .issuedAt(now)
-                .expiration(expiry)
+                .setSubject(userId)
+                .addClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
                 .signWith(secretKey)
                 .compact();
     }
 
     private Claims parseClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
     }
 }

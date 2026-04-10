@@ -22,6 +22,13 @@ import NotificationsPage from './pages/notifications/NotificationsPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import FacultyManagersPage from './pages/admin/FacultyManagersPage';
+import ShopHomePage from './pages/ShopHomePage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import ProductManagement from './pages/admin/ProductManagementPage';
+import OrderManagement from './pages/admin/OrderManagementPage';
 import CalendarView from './pages/CalendarView';
 import EventDetailPage from './pages/EventDetailPage';
 import MyEventsPage from './pages/MyEventsPage';
@@ -55,15 +62,15 @@ export default function App() {
       <AuthProvider>
         <Routes>
           {/* ── Public routes ─────────────────────────────────────────── */}
-          <Route path="/login"        element={<LoginPage />} />
-          <Route path="/register"     element={<RegisterPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
-          <Route path="/staff/login"  element={<StaffLoginPage />} />
+          <Route path="/staff/login" element={<StaffLoginPage />} />
 
           {/* ── Public club pages (viewable without login) ────────────── */}
-          <Route path="/clubs"            element={<ClubsDiscoveryPage />} />
-          <Route path="/clubs/:clubId"    element={<ClubProfilePage />} />
+          <Route path="/clubs" element={<ClubsDiscoveryPage />} />
+          <Route path="/clubs/:clubId" element={<ClubProfilePage />} />
 
           {/* ── Protected routes ──────────────────────────────────────── */}
           <Route element={<ProtectedRoute />}>
@@ -72,7 +79,7 @@ export default function App() {
             <Route path="/home" element={<HomePage />} />
 
             {/* Profile */}
-            <Route path="/profile/edit"  element={<EditProfilePage />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/profile/:userId" element={<ProfilePage />} />
 
             {/* Club — protected actions */}
@@ -82,22 +89,32 @@ export default function App() {
             <Route path="/notifications" element={<NotificationsPage />} />
 
             {/* Admin dashboard routes */}
-            <Route path="/admin/dashboard"          element={<AdminDashboardPage />} />
-            <Route path="/admin/users"              element={<AdminUsersPage />} />
-            <Route path="/admin/faculty-managers"   element={<FacultyManagersPage />} />
+            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/faculty-managers" element={<FacultyManagersPage />} />
 
-            <Route path="/events"           element={<CalendarView />} />
-            <Route path="/events/:id"       element={<EventDetailPage />} />
-            <Route path="/my-events"        element={<MyEventsPage />} />
-            <Route path="/chat"             element={<ChatPage />} />
-            <Route path="/admin/approvals"  element={<AdminApprovalPage />} />
-            
+            <Route path="/events" element={<CalendarView />} />
+            <Route path="/events/:id" element={<EventDetailPage />} />
+            <Route path="/my-events" element={<MyEventsPage />} />
+            <Route path="/chat" element={<ChatPage />} />
+            <Route path="/admin/approvals" element={<AdminApprovalPage />} />
+
             {/* Volunteer Module */}
             <Route path="/my-volunteering" element={<MyVolunteering />} />
             <Route path="/volunteer/apply/:eventId" element={<VolunteerApplicationForm />} />
             <Route path="/club/:clubId/volunteer-management" element={<VolunteerManagement />} />
 
-            <Route path="/shop"      element={<ComingSoon label="Student Shop" />} />
+
+            {/* E-Shop Routes */}
+            <Route path="/shop" element={<ShopHomePage />} />
+            <Route path="/shop/product/:productId" element={<ProductDetailPage />} />
+            <Route path="/shop/cart" element={<CartPage />} />
+            <Route path="/shop/checkout" element={<CheckoutPage />} />
+            <Route path="/shop/orders" element={<MyOrdersPage />} />
+
+            {/* Admin Shop Routes */}
+            <Route path="/admin/shop/products" element={<ProductManagement />} />
+            <Route path="/admin/shop/orders" element={<OrderManagement />} />
 
             {/* Admin — SYSTEM_ADMIN or FACULTY_MANAGER */}
             <Route path="/admin/clubs/pending" element={<ClubApprovalPage />} />
