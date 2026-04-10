@@ -29,6 +29,20 @@ function CheckCircleIcon() {
     </svg>
   );
 }
+function CubeIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+    </svg>
+  );
+}
+function ShoppingBagIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+    </svg>
+  );
+}
 function LogoutIcon() {
   return (
     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -42,6 +56,8 @@ const navItems = [
   { to: '/admin/users',             label: 'User Management',     Icon: UsersIcon },
   { to: '/admin/faculty-managers',  label: 'Faculty Managers',    Icon: BriefcaseIcon },
   { to: '/admin/clubs/pending',     label: 'Club Approvals',      Icon: CheckCircleIcon },
+  { to: '/admin/shop/products',     label: 'Product Management',  Icon: CubeIcon },
+  { to: '/admin/shop/orders',       label: 'Order Management',    Icon: ShoppingBagIcon },
 ];
 
 const activeClass   = 'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg bg-indigo-600 text-white';

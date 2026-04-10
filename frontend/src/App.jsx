@@ -22,6 +22,13 @@ import NotificationsPage from './pages/notifications/NotificationsPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import FacultyManagersPage from './pages/admin/FacultyManagersPage';
+import ShopHomePage from './pages/ShopHomePage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import ProductManagement from './pages/admin/ProductManagementPage';
+import OrderManagement from './pages/admin/OrderManagementPage';
 
 
 // ── "Coming soon" placeholder ─────────────────────────────────────────────
@@ -80,7 +87,17 @@ export default function App() {
 
             <Route path="/events"    element={<ComingSoon label="Events" />} />
             <Route path="/volunteer" element={<ComingSoon label="Volunteer Hub" />} />
-            <Route path="/shop"      element={<ComingSoon label="Student Shop" />} />
+            
+            {/* E-Shop Routes */}
+            <Route path="/shop" element={<ShopHomePage />} />
+            <Route path="/shop/product/:productId" element={<ProductDetailPage />} />
+            <Route path="/shop/cart" element={<CartPage />} />
+            <Route path="/shop/checkout" element={<CheckoutPage />} />
+            <Route path="/shop/orders" element={<MyOrdersPage />} />
+            
+            {/* Admin Shop Routes */}
+            <Route path="/admin/shop/products" element={<ProductManagement />} />
+            <Route path="/admin/shop/orders" element={<OrderManagement />} />
 
             {/* Admin — SYSTEM_ADMIN or FACULTY_MANAGER */}
             <Route path="/admin/clubs/pending" element={<ClubApprovalPage />} />

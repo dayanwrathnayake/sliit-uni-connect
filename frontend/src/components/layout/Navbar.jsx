@@ -6,6 +6,7 @@ import { useThemeStore } from '../../store/themeStore';
 import { avatarColour, initials } from '../profile/ProfileCard';
 import { canApproveClubs, isStudent } from '../../utils/roles';
 import NotificationBell from '../notifications/NotificationBell';
+import useCartStore from '../../store/cartStore';
 
 function SunIcon() {
   return (
@@ -32,6 +33,18 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const items = useCartStore(state => state.items);
+  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+
+  const [badgeAnimate, setBadgeAnimate] = useState(false);
+
+  useEffect(() => {
+    if (itemCount > 0) {
+      setBadgeAnimate(true);
+      const timer = setTimeout(() => setBadgeAnimate(false), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [itemCount]);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -73,6 +86,12 @@ export default function Navbar() {
                 >
                   Clubs
                 </Link>
+                <Link
+                  to="/shop"
+                  className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                  E-Shop
+                </Link>
                 {canApproveClubs(store) && (
                   <Link
                     to="/admin/clubs/pending"
@@ -96,6 +115,24 @@ export default function Navbar() {
 
             {/* Notification bell (students only) */}
             {isAuthenticated && isStudent(store) && <NotificationBell />}
+
+            {isAuthenticated && (
+              <Link
+                to="/shop/cart"
+                id="nav-cart-link"
+                className="relative p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                title="Shopping Cart"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {itemCount > 0 && (
+                  <span className={`absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white shadow-sm transition-transform ${badgeAnimate ? 'animate-pulse-scale' : 'zoom-in duration-300'}`}>
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
             {isAuthenticated ? (
               <div className="relative" ref={dropdownRef}>
@@ -211,6 +248,11 @@ export default function Navbar() {
               <Link to="/home" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Home</Link>
               <Link to="/profile/me" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">My Profile</Link>
               <Link to="/clubs" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Clubs</Link>
+              <Link to="/shop" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">E-Shop</Link>
+              <Link to="/shop/cart" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors flex items-center justify-between">
+                <span>View Cart</span>
+                {itemCount > 0 && <span className="bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{itemCount}</span>}
+              </Link>
               {canApproveClubs(store) && (
                 <Link to="/admin/clubs/pending" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-orange-400 hover:bg-slate-800 transition-colors font-medium">Approvals</Link>
               )}
