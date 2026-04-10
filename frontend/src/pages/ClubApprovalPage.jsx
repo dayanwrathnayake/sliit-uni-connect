@@ -38,7 +38,7 @@ function PendingCard({ club, onApprove, onReject }) {
 
   return (
     <div
-      className={`bg-white rounded-xl border border-gray-100 shadow-sm p-5 transition-all duration-500 ${
+      className={`bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm dark:shadow-black/20 p-5 transition-all duration-500 ${
         removing ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'
       }`}
     >
@@ -54,13 +54,13 @@ function PendingCard({ club, onApprove, onReject }) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-0.5">
-            <h3 className="text-base font-semibold text-gray-900">{club.name}</h3>
+            <h3 className="text-base font-semibold text-gray-900 dark:text-slate-100">{club.name}</h3>
             <CategoryBadge category={club.category} />
           </div>
-          <p className="text-xs text-gray-500 mb-2">
-            Requested by: <span className="font-medium text-gray-700">{club.adminName}</span>
+          <p className="text-xs text-gray-500 dark:text-slate-400 mb-2">
+            Requested by: <span className="font-medium text-gray-700 dark:text-slate-300">{club.adminName}</span>
           </p>
-          <p className="text-sm text-gray-600 line-clamp-3 mb-4">{club.description}</p>
+          <p className="text-sm text-gray-600 dark:text-slate-400 line-clamp-3 mb-4">{club.description}</p>
 
           {/* Action buttons */}
           {!rejecting ? (
@@ -87,12 +87,12 @@ function PendingCard({ club, onApprove, onReject }) {
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Reason for rejection (required)…"
                 rows={2}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 bg-white focus:ring-2 focus:ring-red-500 focus:border-transparent w-full resize-none"
+                className="border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-slate-200 bg-white dark:bg-slate-700 placeholder-gray-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-red-500 focus:border-transparent w-full resize-none"
               />
               <div className="flex gap-2">
                 <button
                   onClick={() => { setRejecting(false); setReason(''); }}
-                  className="border border-gray-300 text-gray-600 rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
+                  className="border border-gray-300 dark:border-slate-600 text-gray-600 dark:text-slate-400 rounded-lg px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   Cancel
                 </button>
@@ -172,14 +172,14 @@ export default function ClubApprovalPage() {
       <ToastContainer toast={toast} />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Club Approval Requests</h1>
-          {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Club Approval Requests</h1>
+          {subtitle && <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">{subtitle}</p>}
         </div>
 
         {loading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-gray-100 rounded-xl animate-pulse h-32" />
+              <div key={i} className="bg-gray-100 dark:bg-slate-800 rounded-xl animate-pulse h-32" />
             ))}
           </div>
         ) : error ? (
@@ -187,8 +187,8 @@ export default function ClubApprovalPage() {
         ) : clubs.length === 0 ? (
           <div className="text-center py-20">
             <CheckIcon />
-            <h3 className="text-base font-semibold text-gray-700 mb-1">All caught up!</h3>
-            <p className="text-sm text-gray-400">No pending club requests at this time.</p>
+            <h3 className="text-base font-semibold text-gray-700 dark:text-slate-300 mb-1">All caught up!</h3>
+            <p className="text-sm text-gray-400 dark:text-slate-500">No pending club requests at this time.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -206,5 +206,3 @@ export default function ClubApprovalPage() {
     </PageLayout>
   );
 }
-
-

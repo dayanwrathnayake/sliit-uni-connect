@@ -61,8 +61,8 @@ export default function FollowButton({ clubId, initialIsFollowing, followerCount
       className={`
         flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all disabled:opacity-60
         ${following
-          ? 'border border-red-400 text-red-500 hover:bg-red-50'
-          : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+          ? 'border border-red-400 dark:border-red-500/60 text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10'
+          : 'bg-indigo-600 hover:bg-indigo-500 text-white'
         }
       `}
     >

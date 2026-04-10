@@ -55,28 +55,28 @@ export default function WelcomeCard() {
       <div className="flex gap-2">
         <Link
           to="/profile/me"
-          className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/60 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-900/50 rounded-lg py-2 transition-colors"
+          className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-indigo-100 dark:border-slate-600 rounded-lg py-2 transition-colors"
         >
           My Profile
         </Link>
         {isClubAdmin(store) ? (
           <Link
             to="/clubs"
-            className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/60 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-900/50 rounded-lg py-2 transition-colors"
+            className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-indigo-100 dark:border-slate-600 rounded-lg py-2 transition-colors"
           >
             My Club
           </Link>
         ) : (
           <Link
             to="/clubs"
-            className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/60 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-900/50 rounded-lg py-2 transition-colors"
+            className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-indigo-100 dark:border-slate-600 rounded-lg py-2 transition-colors"
           >
             Explore Clubs
           </Link>
         )}
         <Link
           to="/notifications"
-          className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/60 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-900/50 rounded-lg py-2 transition-colors"
+          className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-indigo-100 dark:border-slate-600 rounded-lg py-2 transition-colors"
         >
           Alerts
         </Link>
