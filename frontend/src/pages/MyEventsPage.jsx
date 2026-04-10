@@ -147,7 +147,7 @@ export default function MyEventsPage() {
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
            <CreateEventForm 
-             onSuccess={() => { setShowCreateModal(false); fetchData(); }}
+             onSuccess={(newEvent) => { setShowCreateModal(false); if(newEvent?.id) navigate(`/events/${newEvent.id}`); else fetchData(); }}
              onCancel={() => setShowCreateModal(false)}
            />
         </div>

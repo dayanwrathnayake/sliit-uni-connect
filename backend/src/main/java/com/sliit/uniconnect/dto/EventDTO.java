@@ -43,4 +43,9 @@ public class EventDTO {
 
     @NotBlank(message = "Club ID is required")
     private String clubId;
+
+    private String imageUrl;
+
+    private com.sliit.uniconnect.model.FacultyScope facultyScope;
+    private com.sliit.uniconnect.model.FacultyEnum faculty;
 }

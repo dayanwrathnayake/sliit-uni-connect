@@ -6,5 +6,6 @@ public enum EventStatus {
     PENDING_FACULTY,
     PUBLISHED,
     REJECTED,
-    CANCELLED
+    CANCELLED,
+    CLOSED
 }

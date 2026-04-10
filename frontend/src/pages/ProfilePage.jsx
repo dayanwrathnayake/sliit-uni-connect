@@ -4,6 +4,7 @@ import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
 import PageLayout from '../components/layout/PageLayout';
 import { avatarColour, initials } from '../components/profile/ProfileCard';
+import { getMyCertificates, getMyTasks } from '../api/volunteerService';
 
 // ── Faculty / Role display maps ───────────────────────────────────────────
 const FACULTY_LABEL = {
@@ -78,6 +79,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [certificates, setCertificates] = useState([]);
+  const [volunteerTasks, setVolunteerTasks] = useState([]);
 
   useEffect(() => {
     if (!userId) {
@@ -93,7 +96,13 @@ export default function ProfilePage() {
         setError(err.response?.data?.error || 'Failed to load profile.');
       })
       .finally(() => setLoading(false));
-  }, [userId, navigate]);
+
+    // If it's the logged-in user, fetch volunteer data
+    if (isOwnProfile) {
+      getMyCertificates().then(setCertificates).catch(() => {});
+      getMyTasks().then(setVolunteerTasks).catch(() => {});
+    }
+  }, [userId, navigate, isOwnProfile]);
 
   const copyReferralCode = () => {
     if (!profile?.referralCode) return;
@@ -191,8 +200,33 @@ export default function ProfilePage() {
           <div className="grid grid-cols-3 gap-4">
             <StatBox label="Points earned" value={profile.points ?? 0} emoji="🏆" />
             <StatBox label="Events attended" value={0} emoji="📅" />
-            <StatBox label="Volunteer sessions" value={0} emoji="🤝" />
+            <StatBox label="Volunteer sessions" value={isOwnProfile ? volunteerTasks.length : 0} emoji="🤝" />
           </div>
+
+          {/* ── Certificates (own profile only) ── */}
+          {isOwnProfile && certificates.length > 0 && (
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+               <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">Recent Certificates</h2>
+                  <Link to="/my-volunteering" className="text-xs text-indigo-400 hover:underline font-bold uppercase transition-all">View All Hub</Link>
+               </div>
+               <div className="space-y-3">
+                  {certificates.slice(0, 3).map(cert => (
+                    <div key={cert.id} className="flex items-center justify-between p-4 bg-slate-800/40 rounded-xl border border-slate-700/30">
+                       <div className="flex items-center gap-3">
+                          <span className="text-xl">📜</span>
+                          <span className="text-sm font-medium text-slate-200">Volunteer Certificate</span>
+                       </div>
+                       {cert.status === 'GENERATED' && (
+                         <a href={cert.pdfUrl} target="_blank" rel="noreferrer" className="text-indigo-400 hover:text-indigo-300">
+                            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                         </a>
+                       )}
+                    </div>
+                  ))}
+               </div>
+            </div>
+          )}
 
           {/* ── Referral code (own profile only) ── */}
           {isOwnProfile && profile.referralCode && (

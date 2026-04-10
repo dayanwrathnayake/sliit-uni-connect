@@ -66,6 +66,12 @@ public class EventController {
         return ResponseEntity.ok(eventService.unregisterFromEvent(id, currentUserId()));
     }
 
+    @PutMapping("/{id}/close")
+    @PreAuthorize("hasRole('CLUB_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<Event> closeEvent(@PathVariable String id) {
+        return ResponseEntity.ok(eventService.closeEvent(id, currentUserId()));
+    }
+
     @GetMapping("/calendar")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Event>> getCalendarEvents(

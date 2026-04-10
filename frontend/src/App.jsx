@@ -27,6 +27,9 @@ import EventDetailPage from './pages/EventDetailPage';
 import MyEventsPage from './pages/MyEventsPage';
 import AdminApprovalPage from './pages/admin/AdminApprovalPage';
 import ChatPage from './pages/ChatPage';
+import VolunteerApplicationForm from './pages/volunteers/VolunteerApplicationForm';
+import MyVolunteering from './pages/volunteers/MyVolunteering';
+import VolunteerManagement from './pages/volunteers/VolunteerManagement';
 
 
 // ── "Coming soon" placeholder ─────────────────────────────────────────────
@@ -88,7 +91,12 @@ export default function App() {
             <Route path="/my-events"        element={<MyEventsPage />} />
             <Route path="/chat"             element={<ChatPage />} />
             <Route path="/admin/approvals"  element={<AdminApprovalPage />} />
-            <Route path="/volunteer" element={<ComingSoon label="Volunteer Hub" />} />
+            
+            {/* Volunteer Module */}
+            <Route path="/my-volunteering" element={<MyVolunteering />} />
+            <Route path="/volunteer/apply/:eventId" element={<VolunteerApplicationForm />} />
+            <Route path="/club/:clubId/volunteer-management" element={<VolunteerManagement />} />
+
             <Route path="/shop"      element={<ComingSoon label="Student Shop" />} />
 
             {/* Admin — SYSTEM_ADMIN or FACULTY_MANAGER */}

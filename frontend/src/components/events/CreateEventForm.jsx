@@ -20,7 +20,8 @@ export default function CreateEventForm({ onSuccess, onCancel }) {
     endDate: '',
     venue: '',
     capacity: 50,
-    clubId: ''
+    clubId: '',
+    imageUrl: ''
   });
 
   useEffect(() => {
@@ -45,8 +46,8 @@ export default function CreateEventForm({ onSuccess, onCancel }) {
     setError(null);
 
     try {
-      await createEvent(formData);
-      if (onSuccess) onSuccess();
+      const newEvent = await createEvent(formData);
+      if (onSuccess) onSuccess(newEvent);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to create event. Check your dates!');
     } finally {
@@ -113,6 +114,18 @@ export default function CreateEventForm({ onSuccess, onCancel }) {
             value={formData.description}
             onChange={handleChange}
           ></textarea>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Banner Image URL (optional)</label>
+          <input
+            type="url"
+            name="imageUrl"
+            className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            placeholder="https://example.com/image.jpg"
+            value={formData.imageUrl}
+            onChange={handleChange}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
