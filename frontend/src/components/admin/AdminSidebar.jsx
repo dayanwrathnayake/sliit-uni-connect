@@ -8,6 +8,13 @@ function GridIcon() {
     </svg>
   );
 }
+function HomeIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9M9 12l3 3m0 0l3-3" />
+    </svg>
+  );
+}
 function UsersIcon() {
   return (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -52,6 +59,7 @@ function LogoutIcon() {
 }
 
 const navItems = [
+  { to: '/home',                    label: 'Home Page',                Icon: HomeIcon },
   { to: '/admin/dashboard',         label: 'Dashboard Overview',  Icon: GridIcon },
   { to: '/admin/users',             label: 'User Management',     Icon: UsersIcon },
   { to: '/admin/faculty-managers',  label: 'Faculty Managers',    Icon: BriefcaseIcon },
