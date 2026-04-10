@@ -103,6 +103,8 @@ export default function Navbar() {
                   className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
                 >
                   E-Shop
+                </Link>
+                <Link
                   to="/chat"
                   className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
                 >
