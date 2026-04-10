@@ -24,6 +24,7 @@ public class ClubService {
     private final StaffUserRepository staffUserRepository;
     // ADD: notification dispatch
     private final NotificationService notificationService;
+    private final ChatService chatService;
 
     // ── DTO Mappers ───────────────────────────────────────────────────────────
 
@@ -139,6 +140,11 @@ public class ClubService {
 
         club.setUpdatedAt(LocalDateTime.now());
         Club saved = clubRepository.save(club);
+
+        if (dto.isApproved()) {
+            // Create the official club chat room immediately
+            chatService.createOrGetChatRoom(saved.getId(), saved.getName() + " Official", saved.getAdminId(), com.sliit.uniconnect.model.RoomType.CLUB);
+        }
 
         // ADD: notify the student who requested the club
         if (dto.isApproved()) {

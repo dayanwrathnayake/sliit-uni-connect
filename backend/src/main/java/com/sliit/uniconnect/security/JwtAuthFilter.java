@@ -55,9 +55,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             String userId   = jwtUtil.extractUserId(token);
             String role     = jwtUtil.extractRole(token);
-            String userType = jwtUtil.extractUserType(token); // "STUDENT" or "STAFF"
+            String userType = jwtUtil.extractUserType(token);
 
-            // Route existence check to the correct MongoDB collection
             boolean exists = "STAFF".equals(userType)
                     ? staffUserRepository.existsById(userId)
                     : userRepository.existsById(userId);
