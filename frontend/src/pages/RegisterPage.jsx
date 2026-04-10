@@ -264,13 +264,13 @@ export default function RegisterPage() {
             />
 
             {/* ① Logo + Main content */}
-            <div className="relative z-10 space-y-13">
+            <div className="relative z-10 space-y-12">
             <div>
               <Logo size="md" />
             </div>
 
             {/* ② Main content */}
-            <div className="space-y-7">
+            <div className="space-y-10">
 
               {/* Headline */}
               <div>
@@ -280,14 +280,14 @@ export default function RegisterPage() {
                     community today.
                   </span>
                 </h2>
-                <p className="mt-3 text-[13px] leading-relaxed text-slate-400">
+                <p className="pt-1 mt-3 text-[13px] leading-relaxed text-slate-300">
                   Create your free account in minutes and unlock everything the SLIIT campus has to offer — clubs, events, rewards, and more.
                 </p>
               </div>
 
               {/* 3-step process */}
               <div>
-                <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-slate-600">
+                <p className="mb-3 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
                   How it works
                 </p>
                 <Step number="1" title="Enter your Student ID" desc="We auto-detect your faculty and generate your SLIIT email" />
@@ -297,10 +297,10 @@ export default function RegisterPage() {
 
               {/* What you unlock */}
               <div>
-                <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest text-slate-600">
+                <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-widest text-slate-400">
                   What you unlock
                 </p>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <MiniCard icon={IconClubs}     title="Clubs & Societies" accent={{ border: 'border-indigo-500/15', iconBg: 'border-indigo-500/20 bg-indigo-500/10' }} />
                   <MiniCard icon={IconCalendar}  title="Event Calendar"    accent={{ border: 'border-violet-500/15', iconBg: 'border-violet-500/20 bg-violet-500/10' }} />
                   <MiniCard icon={IconVolunteer} title="Volunteer & Points" accent={{ border: 'border-amber-500/15',  iconBg: 'border-amber-500/20 bg-amber-500/10'  }} />
@@ -312,8 +312,8 @@ export default function RegisterPage() {
 
             {/* ③ Footer */}
             <div className="relative z-10 flex items-center justify-between">
-              <p className="text-[11px] text-slate-700">© 2026 SLIIT · UNI-Connect Platform</p>
-              <div className="flex items-center gap-1 text-[11px] text-slate-700">
+              <p className="text-[11px] text-slate-600">© 2026 SLIIT · UNI-Connect Platform</p>
+              <div className="flex items-center gap-1 text-[11px] text-slate-600">
                 <ShieldIcon />
                 <span>Secured</span>
               </div>
