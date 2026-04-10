@@ -116,4 +116,55 @@ public class EmailService {
             log.warn("Failed to send verification email to {}: {}", toEmail, ex.getMessage());
         }
     }
+
+    @Async
+    public void sendOrderConfirmationEmail(com.sliit.uniconnect.model.User student, com.sliit.uniconnect.model.Order order) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromAddress);
+            helper.setTo(student.getEmail());
+            helper.setSubject("Your E-Shop Order Confirmation (#" + order.getId() + ")");
+
+            StringBuilder itemsHtml = new StringBuilder();
+            for (com.sliit.uniconnect.model.OrderItem item : order.getItems()) {
+                itemsHtml.append(String.format("<tr><td style=\"padding:8px 0; border-bottom:1px solid #334155; color:#cbd5e1;\">%s (x%d)</td><td style=\"padding:8px 0; border-bottom:1px solid #334155; color:#f1f5f9; text-align:right;\">Rs. %s</td></tr>", 
+                    item.getProductName(), item.getQuantity(), item.getPriceAtPurchase().multiply(java.math.BigDecimal.valueOf(item.getQuantity()))));
+            }
+
+            String html = """
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head><meta charset="UTF-8"/></head>
+                    <body style="margin:0;padding:0;background:#0f172a;font-family:'Segoe UI',Arial,sans-serif;">
+                      <table width="100%%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+                        <tr><td align="center">
+                          <table width="560" cellpadding="0" cellspacing="0" style="background:#1e293b;border-radius:16px;border:1px solid #334155;padding:40px;">
+                            <tr><td>
+                              <h2 style="color:#f1f5f9;margin:0 0 16px;">Order Confirmed! 🎉</h2>
+                              <p style="color:#94a3b8;margin:0 0 24px;line-height:1.6;">Hi %s,<br/>Your E-Shop order has been placed successfully and is now <b>PENDING</b>. We'll let you know when it's ready for campus pickup.</p>
+                              
+                              <table width="100%%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                                <tr><th style="text-align:left;color:#94a3b8;padding-bottom:8px;border-bottom:2px solid #334155;">Item</th><th style="text-align:right;color:#94a3b8;padding-bottom:8px;border-bottom:2px solid #334155;">Price</th></tr>
+                                %s
+                                <tr><td style="padding-top:16px;color:#f8fafc;font-weight:bold;">Total Amount</td><td style="padding-top:16px;color:#amber-500;font-weight:bold;text-align:right;">Rs. %s</td></tr>
+                              </table>
+                              
+                              <p style="color:#64748b;font-size:13px;margin:0;">Contact telephone provided: %s</p>
+                            </td></tr>
+                          </table>
+                        </td></tr>
+                      </table>
+                    </body></html>
+                    """.formatted(student.getDisplayName(), itemsHtml.toString(), order.getTotalAmount(), order.getTelephoneNumber());
+
+            helper.setText(html, true);
+            mailSender.send(message);
+            log.info("Order confirmation email sent to {}", student.getEmail());
+
+        } catch (MessagingException ex) {
+            log.warn("Failed to send order confirmation email to {}: {}", student.getEmail(), ex.getMessage());
+        }
+    }
 }

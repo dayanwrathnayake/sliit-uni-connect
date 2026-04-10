@@ -35,3 +35,27 @@ export const createFacultyManager = ({ displayName, email, password, faculty }) 
 
 export const deactivateFacultyManager = (staffId) =>
   api.delete(`/api/staff/${staffId}`);
+
+// ── Shop Management ───────────────────────────────────────────────────────────
+
+export const getAdminProducts = (clubId) =>
+  api.get('/api/admin/shop/products', { params: { clubId } });
+
+export const createAdminProduct = (productData) =>
+  api.post('/api/admin/shop/products', productData);
+
+export const updateAdminProduct = (productId, productData) =>
+  api.put(`/api/admin/shop/products/${productId}`, productData);
+
+export const deleteAdminProduct = (productId) =>
+  api.delete(`/api/admin/shop/products/${productId}`);
+
+export const getAdminOrders = (clubId) =>
+  api.get('/api/admin/shop/orders', { params: { clubId } });
+
+export const updateAdminOrderStatus = (orderId, status) =>
+  api.patch(`/api/admin/shop/orders/${orderId}/status`, null, { params: { status } });
+
+export const getShopStats = (clubId) =>
+  api.get('/api/admin/shop/stats', { params: { clubId } });
+

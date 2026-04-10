@@ -4,6 +4,7 @@ import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
 import PageLayout from '../components/layout/PageLayout';
 import { avatarColour, initials } from '../components/profile/ProfileCard';
+import shopApi from '../api/shopApi';
 
 // ── Faculty / Role display maps ───────────────────────────────────────────
 const FACULTY_LABEL = {
@@ -65,6 +66,57 @@ function StatBox({ label, value, emoji }) {
   );
 }
 
+function ShopOrdersList() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    shopApi.getMyOrders()
+      .then(({ data }) => setOrders(data))
+      .catch(err => console.error("Failed to fetch orders", err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return <div className="space-y-4 pt-2">
+      {[1, 2].map(i => <div key={i} className="h-16 bg-slate-800 rounded-xl animate-pulse" />)}
+    </div>;
+  }
+
+  if (orders.length === 0) {
+    return <p className="text-sm text-slate-600 italic py-4">You haven't placed any orders yet.</p>;
+  }
+
+  return (
+    <div className="space-y-3 pt-2">
+      {orders.map(order => (
+        <div key={order.id} className="bg-slate-800/50 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-bold text-indigo-400">#{order.id.slice(-6).toUpperCase()}</span>
+              <span className={`px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
+                order.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500' :
+                order.status === 'READY' ? 'bg-indigo-500/10 text-indigo-500' :
+                order.status === 'COLLECTED' ? 'bg-green-500/10 text-green-500' :
+                'bg-slate-700 text-slate-400'
+              }`}>
+                {order.status}
+              </span>
+            </div>
+            <p className="text-sm text-slate-200 truncate truncate-2">
+              {order.items.map(i => `${i.quantity}x ${i.productName}`).join(', ')}
+            </p>
+          </div>
+          <div className="text-right flex-shrink-0 ml-4">
+            <p className="text-sm font-bold text-white whitespace-nowrap">Rs. {order.totalAmount}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">{new Date(order.createdAt).toLocaleDateString()}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const { userId: rawUserId } = useParams();
   const { userId: myId } = useAuthStore();
@@ -113,118 +165,131 @@ export default function ProfilePage() {
 
   return (
     <PageLayout>
-      {loading && <ProfileSkeleton />}
+      <div className="max-w-5xl mx-auto px-4 py-12">
+        {loading && <ProfileSkeleton />}
 
-      {error && (
-        <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-6 text-center">
-          <p className="text-red-400">{error}</p>
-          <Link to="/" className="mt-4 inline-block text-sm text-indigo-400 hover:text-indigo-300">← Go home</Link>
-        </div>
-      )}
+        {error && (
+          <div className="rounded-xl bg-red-500/10 border border-red-500/20 p-6 text-center">
+            <p className="text-red-400">{error}</p>
+            <Link to="/" className="mt-4 inline-block text-sm text-indigo-400 hover:text-indigo-300">← Go home</Link>
+          </div>
+        )}
 
-      {!loading && profile && (
-        <div className="space-y-6">
+        {!loading && profile && (
+          <div className="space-y-6">
 
-          {/* ── Header ── */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
-              {/* Avatar */}
-              <div className={`h-36 w-36 rounded-full flex-shrink-0 overflow-hidden ring-4 ring-slate-700 flex items-center justify-center ${colour}`}>
-                {profile.profilePicUrl ? (
-                  <img src={profile.profilePicUrl} alt={profile.displayName} className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-5xl font-bold text-white">{abbr}</span>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{profile.displayName}</h1>
-
-                {/* Badges */}
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {profile.faculty && (
-                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${FACULTY_STYLE[profile.faculty] ?? 'bg-slate-700 text-slate-300'}`}>
-                      {FACULTY_LABEL[profile.faculty] ?? profile.faculty}
-                    </span>
-                  )}
-                  {profile.role && profile.role !== 'STUDENT' && (
-                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${ROLE_STYLE[profile.role] ?? 'bg-slate-700 text-slate-300'}`}>
-                      {ROLE_LABEL[profile.role] ?? profile.role}
-                    </span>
+            {/* ── Header ── */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8">
+              <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                {/* Avatar */}
+                <div className={`h-36 w-36 rounded-full flex-shrink-0 overflow-hidden ring-4 ring-slate-700 flex items-center justify-center ${colour}`}>
+                  {profile.profilePicUrl ? (
+                    <img src={profile.profilePicUrl} alt={profile.displayName} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-5xl font-bold text-white">{abbr}</span>
                   )}
                 </div>
 
-                <p className="text-slate-400 text-sm font-mono mb-1">{profile.studentId}</p>
-                <p className="text-slate-500 text-xs">Member since {formatDate(profile.createdAt)}</p>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{profile.displayName}</h1>
 
-                {isOwnProfile && (
-                  <Link
-                    to="/profile/edit"
-                    className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-600/30 px-4 py-2 text-sm font-medium text-indigo-300 transition-all"
-                  >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    Edit Profile
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {profile.faculty && (
+                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${FACULTY_STYLE[profile.faculty] ?? 'bg-slate-700 text-slate-300'}`}>
+                        {FACULTY_LABEL[profile.faculty] ?? profile.faculty}
+                      </span>
+                    )}
+                    {profile.role && profile.role !== 'STUDENT' && (
+                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${ROLE_STYLE[profile.role] ?? 'bg-slate-700 text-slate-300'}`}>
+                        {ROLE_LABEL[profile.role] ?? profile.role}
+                      </span>
+                    )}
+                  </div>
 
-          {/* ── Bio ── */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500 mb-3">About</h2>
-            {profile.bio ? (
-              <p className="text-slate-300 leading-relaxed">{profile.bio}</p>
-            ) : isOwnProfile ? (
-              <Link to="/profile/edit" className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
-                + Add a bio
-              </Link>
-            ) : (
-              <p className="text-slate-600 text-sm italic">No bio yet.</p>
-            )}
-          </div>
+                  <p className="text-slate-400 text-sm font-mono mb-1">{profile.studentId}</p>
+                  <p className="text-slate-500 text-xs">Member since {formatDate(profile.createdAt)}</p>
 
-          {/* ── Stats ── */}
-          <div className="grid grid-cols-3 gap-4">
-            <StatBox label="Points earned" value={profile.points ?? 0} emoji="🏆" />
-            <StatBox label="Events attended" value={0} emoji="📅" />
-            <StatBox label="Volunteer sessions" value={0} emoji="🤝" />
-          </div>
-
-          {/* ── Referral code (own profile only) ── */}
-          {isOwnProfile && profile.referralCode && (
-            <div className="bg-gradient-to-br from-indigo-600/10 to-violet-600/5 border border-indigo-500/20 rounded-2xl p-6">
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500 mb-1">Your Referral Code</h2>
-              <p className="text-xs text-slate-500 mb-4">
-                Share this code with friends — you both earn bonus points when they volunteer.
-              </p>
-              <div className="flex items-center gap-3">
-                <code className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-lg font-mono font-bold text-indigo-300 tracking-widest text-center">
-                  {profile.referralCode}
-                </code>
-                <button
-                  onClick={copyReferralCode}
-                  className={`flex-shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                    copied
-                      ? 'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400'
-                      : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                  }`}
-                >
-                  {copied ? (
-                    <><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> Copied!</>
-                  ) : (
-                    <><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy</>
+                  {isOwnProfile && (
+                    <Link
+                      to="/profile/edit"
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/40 border border-indigo-600/30 px-4 py-2 text-sm font-medium text-indigo-300 transition-all"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit Profile
+                    </Link>
                   )}
-                </button>
+                </div>
               </div>
             </div>
-          )}
 
-        </div>
-      )}
+            {/* ── Bio ── */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500 mb-3">About</h2>
+              {profile.bio ? (
+                <p className="text-slate-300 leading-relaxed">{profile.bio}</p>
+              ) : isOwnProfile ? (
+                <Link to="/profile/edit" className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
+                  + Add a bio
+                </Link>
+              ) : (
+                <p className="text-slate-600 text-sm italic">No bio yet.</p>
+              )}
+            </div>
+
+            {/* ── Stats ── */}
+            <div className="grid grid-cols-3 gap-4">
+              <StatBox label="Points earned" value={profile.points ?? 0} emoji="🏆" />
+              <StatBox label="Events attended" value={0} emoji="📅" />
+              <StatBox label="Volunteer sessions" value={0} emoji="🤝" />
+            </div>
+
+            {/* ── My Shop Orders (own profile only) ── */}
+            {isOwnProfile && (
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">My Shop Orders</h2>
+                  <Link to="/shop" className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">Go to E-Shop →</Link>
+                </div>
+                <ShopOrdersList />
+              </div>
+            )}
+
+            {/* ── Referral code (own profile only) ── */}
+            {isOwnProfile && profile.referralCode && (
+              <div className="bg-gradient-to-br from-indigo-600/10 to-violet-600/5 border border-indigo-500/20 rounded-2xl p-6">
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500 mb-1">Your Referral Code</h2>
+                <p className="text-xs text-slate-500 mb-4">
+                  Share this code with friends — you both earn bonus points when they volunteer.
+                </p>
+                <div className="flex items-center gap-3">
+                  <code className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-lg font-mono font-bold text-indigo-300 tracking-widest text-center">
+                    {profile.referralCode}
+                  </code>
+                  <button
+                    onClick={copyReferralCode}
+                    className={`flex-shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                      copied
+                        ? 'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400'
+                        : 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                    }`}
+                  >
+                    {copied ? (
+                      <><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> Copied!</>
+                    ) : (
+                      <><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
+      </div>
     </PageLayout>
   );
 }
