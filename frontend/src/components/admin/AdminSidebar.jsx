@@ -42,6 +42,7 @@ const navItems = [
   { to: '/admin/users',             label: 'User Management',     Icon: UsersIcon },
   { to: '/admin/faculty-managers',  label: 'Faculty Managers',    Icon: BriefcaseIcon },
   { to: '/admin/clubs/pending',     label: 'Club Approvals',      Icon: CheckCircleIcon },
+  { to: '/admin/approvals',         label: 'Event Approvals',     Icon: CheckCircleIcon },
 ];
 
 const activeClass   = 'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg bg-indigo-600 text-white';

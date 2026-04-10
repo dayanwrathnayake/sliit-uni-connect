@@ -32,70 +32,39 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF — stateless JWT API
             .csrf(AbstractHttpConfigurer::disable)
-
-            // Apply CORS configuration before any security checks
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-            // Stateless — no HttpSession
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
             .authorizeHttpRequests(auth -> auth
-                    // Preflight
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                    // Swagger / OpenAPI UI
-                    .requestMatchers(
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/v3/api-docs/**"
-                    ).permitAll()
-
-                    // Public student auth
+                    .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                     .requestMatchers(HttpMethod.GET,  "/api/auth/verify-email").permitAll()
-
-                    // Public staff login (no register — staff are provisioned)
                     .requestMatchers(HttpMethod.POST, "/api/staff/auth/login").permitAll()
-
-                    // Public user profile
                     .requestMatchers(HttpMethod.GET, "/api/users/*/profile").permitAll()
 
-                    // Staff management — SYSTEM_ADMIN only
+                    // Admin & Staff Management
                     .requestMatchers(HttpMethod.POST,   "/api/staff/register").hasRole("SYSTEM_ADMIN")
                     .requestMatchers(HttpMethod.GET,    "/api/staff/faculty-managers").hasRole("SYSTEM_ADMIN")
                     .requestMatchers(HttpMethod.DELETE, "/api/staff/**").hasRole("SYSTEM_ADMIN")
-
-                    // Admin user management — SYSTEM_ADMIN only
                     .requestMatchers("/api/admin/users/**").hasRole("SYSTEM_ADMIN")
-                    .requestMatchers("/api/admin/users").hasRole("SYSTEM_ADMIN")
 
-                    // Club approval — SYSTEM_ADMIN or FACULTY_MANAGER
-                    .requestMatchers(HttpMethod.GET, "/api/clubs/pending")
-                            .hasAnyRole("SYSTEM_ADMIN", "FACULTY_MANAGER")
-                    .requestMatchers(HttpMethod.PUT, "/api/clubs/*/approve")
-                            .hasAnyRole("SYSTEM_ADMIN", "FACULTY_MANAGER")
+                    // M2 Module: Events & Chat
+                    .requestMatchers("/api/events/**", "/api/chat/**").authenticated()
 
-                    // All other club endpoints — any authenticated user
-                    .requestMatchers("/api/clubs/**").authenticated()
+                    // Real-time Handshake
+                    .requestMatchers("/ws/**", "/ws-chat/**").permitAll()
 
-                    // Feed endpoint — authenticated students only (staff are excluded by design)
+                    // Notifications & Feeds
+                    .requestMatchers("/api/notifications/**", "/api/notifications").authenticated()
                     .requestMatchers(HttpMethod.GET, "/api/feed").authenticated()
 
-                    // WebSocket handshake — must be public (STOMP auth handled via JWT interceptor)
-                    .requestMatchers("/ws/**").permitAll()
-
-                    // Notification endpoints — authenticated students only
-                    .requestMatchers("/api/notifications", "/api/notifications/**").authenticated()
-
-                    // Everything else requires a valid JWT
+                    .requestMatchers("/api/clubs/**").authenticated()
                     .anyRequest().authenticated()
             )
-
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -109,26 +78,16 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-
-        // Allow any localhost port (covers 5173, 5174, 3000, etc.)
-        // Use patterns instead of exact origins so Vite port changes don't break CORS.
-        config.setAllowedOriginPatterns(List.of(
-                "http://localhost:[*]",
-                "http://127.0.0.1:[*]"
-        ));
-
-        config.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
-        ));
-
+        // Be more explicit to avoid matching issues on some environments
+        config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        config.setExposedHeaders(List.of("Authorization"));
+        config.setExposedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
-        config.setMaxAge(3600L);
+        config.setMaxAge(3600L); // Cache preflight for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
 }
-
