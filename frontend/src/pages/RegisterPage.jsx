@@ -79,7 +79,7 @@ const Logo = ({ size = 'md' }) => (
       <span className={`font-black text-amber-400 tracking-tight ${size === 'sm' ? 'text-xl' : 'text-3xl'}`}>SLIIT</span>
       <span className={`font-black text-white tracking-tight ${size === 'sm' ? 'text-xl' : 'text-3xl'}`}>&nbsp;UNI CONNECT</span>
     </div>
-    <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-indigo-400/60">
+    <p className="mt-1 text-[12px] font-semibold uppercase tracking-[0.2em] text-indigo-300/60">
       Student Portal
     </p>
   </div>
