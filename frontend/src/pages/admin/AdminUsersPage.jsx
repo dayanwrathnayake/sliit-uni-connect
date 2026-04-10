@@ -103,14 +103,14 @@ export default function AdminUsersPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-gray-800">User Management</h1>
-            <span className="bg-gray-100 text-gray-700 rounded-full px-3 py-1 text-sm font-medium">
+            <h1 className="text-xl font-semibold text-gray-800 dark:text-slate-100">User Management</h1>
+            <span className="bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-full px-3 py-1 text-sm font-medium">
               {users.length} shown
             </span>
           </div>
           <button
             onClick={() => exportCsv(users)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 dark:border-slate-600 rounded-lg text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -126,24 +126,24 @@ export default function AdminUsersPage() {
             placeholder="Search by name or student ID…"
             value={filters.search}
             onChange={(e) => setFilter('search', e.target.value)}
-            className="flex-1 min-w-52 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="flex-1 min-w-52 border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <select
             value={filters.faculty}
             onChange={(e) => setFilter('faculty', e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             {FACULTIES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
           </select>
           <select
             value={filters.role}
             onChange={(e) => setFilter('role', e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             {ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
           {hasActiveFilter && (
-            <button onClick={resetFilters} className="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">
+            <button onClick={resetFilters} className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors">
               Reset Filters
             </button>
           )}

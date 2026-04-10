@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
 import { useAuth } from '../hooks/useAuth';
+import { getPasswordStrength, getStrengthColors, getRequirementStatus, validatePassword, PASSWORD_REQUIREMENTS } from '../utils/passwordValidation';
 
 // ─── Faculty detection ────────────────────────────────────────────────────────
 const FACULTY_MAP = {
@@ -71,6 +72,85 @@ const GiftIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
   </svg>
 );
+
+// ─── Password Strength Meter Component ────────────────────────────────────────
+const PasswordStrengthMeter = ({ password }) => {
+  const { strength, score, label } = getPasswordStrength(password);
+  const colors = getStrengthColors(strength);
+  
+  return (
+    <div className="mt-2.5 space-y-1.5">
+      {/* Strength bar */}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden border border-white/[0.06]">
+          <div
+            className={`h-full ${colors.bg} transition-all duration-300 ease-out`}
+            style={{ width: `${(score / 5) * 100}%` }}
+          />
+        </div>
+        <span className={`text-xs font-semibold ${colors.text} whitespace-nowrap`}>
+          {label}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// ─── Requirements Floating Tooltip Component ─────────────────────────────────────
+const PasswordRequirementsTooltip = ({ password, isVisible }) => {
+  if (!isVisible) return null;
+  
+  const requirements = getRequirementStatus(password);
+
+  return (
+    <div className="pointer-events-none absolute right-0 top-full z-50 mt-2 animate-in fade-in slide-in-from-top-2 duration-200">
+      {/* Floating card */}
+      <div className="relative min-w-[280px] rounded-lg border border-white/[0.1] bg-slate-900/95 backdrop-blur-sm shadow-xl shadow-black/50 p-4 space-y-2.5">
+        {/* Close arrow indicator */}
+        <div className="absolute -top-2 right-8 w-0 h-0 border-l-4 border-r-4 border-b-4 border-l-transparent border-r-transparent border-b-slate-900/95" />
+        
+        <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+          Password Requirements
+        </p>
+        
+        <div className="space-y-2">
+          {requirements.map((req, idx) => (
+            <div key={idx} className="flex items-start gap-2.5">
+              <span className={`text-xs font-bold transition-colors duration-200 px-1.5 py-0.5 rounded ${req.isMet ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-700/40 text-slate-500'}`}>
+                {req.icon}
+              </span>
+              <span className={`text-xs transition-colors duration-200 pt-0.5 leading-tight ${req.isMet ? 'text-emerald-400/80 font-medium' : 'text-slate-400'}`}>
+                {req.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Password Tooltip Component ────────────────────────────────────────────────
+const PasswordTooltip = ({ isVisible }) => {
+  if (!isVisible) return null;
+
+  return (
+    <div className="absolute -top-1 -left-2 transform -translate-y-full mb-2 pointer-events-none">
+      {/* Tooltip box */}
+      <div className="relative bg-slate-900/95 backdrop-blur-sm border border-white/[0.1] rounded-lg px-3 py-2.5 shadow-lg shadow-black/50 whitespace-nowrap animate-in fade-in zoom-in-95 duration-200">
+        <p className="text-xs text-slate-300 font-medium">
+          Create a strong password
+        </p>
+        <p className="text-xs text-slate-500 mt-0.5">
+          Mix uppercase, lowercase, numbers & symbols
+        </p>
+        {/* Tooltip arrow */}
+        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-slate-900/95" />
+      </div>
+    </div>
+  );
+};
+
 
 // ─── Shared logo ──────────────────────────────────────────────────────────────
 const Logo = ({ size = 'md' }) => (
@@ -172,6 +252,8 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [apiError, setApiError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [passwordHovered, setPasswordHovered] = useState(false);
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm({ mode: 'onTouched' });
 
@@ -447,7 +529,12 @@ export default function RegisterPage() {
                   <label className="mb-2 block text-[11px] font-semibold uppercase tracking-widest text-slate-500" htmlFor="reg-password">
                     Password
                   </label>
-                  <div className="relative">
+                  <div 
+                    className="relative"
+                    onMouseEnter={() => setPasswordHovered(true)}
+                    onMouseLeave={() => setPasswordHovered(false)}
+                  >
+                    <PasswordTooltip isVisible={passwordFocused && !passwordValue} />
                     <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
                       <LockIcon />
                     </span>
@@ -455,17 +542,32 @@ export default function RegisterPage() {
                       id="reg-password"
                       type={showPassword ? 'text' : 'password'}
                       autoComplete="new-password"
-                      placeholder="Min. 8 chars"
+                      placeholder="Min. 8 characters"
                       className={`${inputBase(errors.password)} pr-10`}
+                      onFocus={() => setPasswordFocused(true)}
+                      onBlur={() => setPasswordFocused(false)}
                       {...register('password', {
-                        required: 'Required',
-                        minLength: { value: 8, message: 'Min. 8 characters' },
+                        required: 'Password is required',
+                        minLength: { value: 8, message: 'Minimum 8 characters' },
+                        validate: {
+                          uppercase: (v) => /[A-Z]/.test(v) || 'Add an uppercase letter',
+                          lowercase: (v) => /[a-z]/.test(v) || 'Add a lowercase letter',
+                          number: (v) => /[0-9]/.test(v) || 'Add a number',
+                          special: (v) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v) || 'Add a special character',
+                        },
                       })}
                     />
                     <button type="button" onClick={() => setShowPassword(v => !v)} tabIndex={-1} aria-label="Toggle password" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 transition-colors hover:text-slate-300 focus:outline-none">
                       {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                     </button>
+                    
+                    {/* Floating requirements tooltip */}
+                    <PasswordRequirementsTooltip password={passwordValue} isVisible={(passwordFocused || passwordHovered) && passwordValue} />
                   </div>
+                  
+                  {/* Strength meter — stays inline */}
+                  {passwordValue && <PasswordStrengthMeter password={passwordValue} />}
+                  
                   {errors.password && (
                     <p className="mt-1.5 flex items-center gap-1 text-xs text-red-400">
                       <WarnIcon />{errors.password.message}
@@ -485,7 +587,7 @@ export default function RegisterPage() {
                       id="reg-confirm"
                       type={showConfirm ? 'text' : 'password'}
                       autoComplete="new-password"
-                      placeholder="Re-enter"
+                      placeholder="Re-enter password"
                       className={`${inputBase(errors.confirmPassword)} pr-10`}
                       {...register('confirmPassword', {
                         required: 'Required',
