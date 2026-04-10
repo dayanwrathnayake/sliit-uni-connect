@@ -10,13 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-three/fiber": "^9.5.0",
     "@stomp/stompjs": "^7.3.0",
     "axios": "^1.14.0",
+    "framer-motion": "^12.38.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.72.0",
     "react-router-dom": "^7.13.2",
     "sockjs-client": "^1.6.1",
+    "three": "^0.183.2",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
