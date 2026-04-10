@@ -61,8 +61,8 @@ const navItems = [
   { to: '/admin/approvals',         label: 'Event Approvals',     Icon: CheckCircleIcon },
 ];
 
-const activeClass   = 'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg bg-indigo-600 text-white';
-const inactiveClass = 'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 transition-colors';
+const activeClass   = 'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg bg-indigo-600 text-white shadow-sm shadow-indigo-500/20';
+const inactiveClass = 'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-200 transition-colors';
 
 export default function AdminSidebar() {
   const navigate    = useNavigate();
@@ -74,16 +74,17 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 h-screen sticky top-0 flex flex-col flex-shrink-0">
+    <aside className="w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 h-screen sticky top-0 flex flex-col flex-shrink-0">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-100">
+      <div className="px-6 py-5 border-b border-gray-100 dark:border-slate-800">
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">S</span>
+          <div className="flex items-center leading-none">
+            <span className="font-black text-amber-400 tracking-tight text-lg">SLIIT</span>
+            <span className="font-black text-gray-800 dark:text-white tracking-tight text-lg">&nbsp;UC</span>
           </div>
+          <div className="h-4 w-px bg-gray-200 dark:bg-slate-700 mx-0.5" />
           <div>
-            <p className="text-sm font-bold text-gray-800 leading-none">SLIIT UNI-Connect</p>
-            <p className="text-xs text-gray-400 mt-0.5">Admin Panel</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-slate-500">Admin Panel</p>
           </div>
         </div>
       </div>
@@ -103,23 +104,23 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Bottom: user info + logout */}
-      <div className="px-4 py-4 border-t border-gray-100">
+      <div className="px-4 py-4 border-t border-gray-100 dark:border-slate-800">
         <div className="flex items-center gap-2.5 mb-3">
-          <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
-            <span className="text-indigo-700 font-bold text-xs">
+          <div className="h-8 w-8 rounded-full bg-indigo-500/20 dark:bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+            <span className="text-indigo-700 dark:text-indigo-400 font-bold text-xs">
               {displayName ? displayName.charAt(0).toUpperCase() : 'A'}
             </span>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-800 truncate">{displayName}</p>
-            <span className="inline-block text-[10px] bg-indigo-100 text-indigo-700 rounded-full px-2 py-0.5 font-medium mt-0.5">
+            <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{displayName}</p>
+            <span className="inline-block text-[10px] bg-indigo-100 dark:bg-indigo-500/15 text-indigo-700 dark:text-indigo-400 rounded-full px-2 py-0.5 font-medium mt-0.5">
               System Admin
             </span>
           </div>
         </div>
         <button
           onClick={handleLogout}
-          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
         >
           <LogoutIcon />
           Logout
