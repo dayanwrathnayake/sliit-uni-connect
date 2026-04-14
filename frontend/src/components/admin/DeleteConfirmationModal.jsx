@@ -36,8 +36,9 @@ export default function DeleteConfirmationModal({ student, onClose, onConfirm })
     setLoading(true);
 
     try {
-      await deleteStudent(student.studentId);
-      showToast(`Student "${student.displayName}" has been deleted`, 'success');
+      const response = await deleteStudent(student.studentId);
+      const message = response.data?.message || `Student "${student.displayName}" has been deleted`;
+      showToast(message, 'success');
       onConfirm();
       onClose();
     } catch (err) {

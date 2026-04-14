@@ -79,13 +79,17 @@ export default function StudentManagementPage() {
         status: filters.status === 'active' ? 'true' : filters.status === 'inactive' ? 'false' : '',
       });
       
+      // Handle Spring Data Page response: { content: [...], totalElements: 100, ... }
+      const data = response.data?.content || response.data?.data || response.data || [];
+      const studentData = Array.isArray(data) ? data : [];
+      
       if (reset) {
-        setStudents(response.data.data || response.data);
+        setStudents(studentData);
       } else {
-        setStudents(prev => [...prev, ...(response.data.data || response.data)]);
+        setStudents(prev => [...(Array.isArray(prev) ? prev : []), ...studentData]);
       }
       
-      setHasMore((response.data.data || response.data).length === 20);
+      setHasMore(studentData.length === 20);
       setPage(pageNum);
     } catch (err) {
       console.error('Failed to load students:', err);
@@ -98,6 +102,8 @@ export default function StudentManagementPage() {
         setUseMockData(true);
         if (reset) {
           setStudents(MOCK_STUDENTS.slice(0, 20));
+        } else {
+          setStudents(prev => [...(Array.isArray(prev) ? prev : []), ...MOCK_STUDENTS.slice(pageNum * 20, (pageNum + 1) * 20)]);
         }
         setHasMore(false);
       }
@@ -187,13 +193,13 @@ export default function StudentManagementPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Student Management</h1>
             <span className="bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-full px-3 py-1 text-sm font-medium">
-              {students.length} shown
+              {Array.isArray(students) ? students.length : 0} shown
             </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={handleExportPDF}
-              disabled={students.length === 0}
+              disabled={!Array.isArray(students) || students.length === 0}
               className="flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Export as PDF report"
             >
@@ -204,7 +210,7 @@ export default function StudentManagementPage() {
             </button>
             <button
               onClick={handleExportCSV}
-              disabled={students.length === 0}
+              disabled={!Array.isArray(students) || students.length === 0}
               className="flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Export as CSV file"
             >
@@ -247,15 +253,15 @@ export default function StudentManagementPage() {
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
             <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-slate-400 mb-1">Total Students</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{students.length}</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">{Array.isArray(students) ? students.length : 0}</p>
           </div>
           <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
             <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-slate-400 mb-1">Active</p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{students.filter(s => s.isActive).length}</p>
+            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{Array.isArray(students) ? students.filter(s => s.isActive).length : 0}</p>
           </div>
           <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
             <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-slate-400 mb-1">Inactive</p>
-            <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{students.filter(s => !s.isActive).length}</p>
+            <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{Array.isArray(students) ? students.filter(s => !s.isActive).length : 0}</p>
           </div>
         </div>
 

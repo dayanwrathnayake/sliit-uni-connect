@@ -44,7 +44,7 @@ function ActionMenu({ student, onEdit, onDelete, onActivate, onDeactivate, onVie
 
       {open && (
         <div className="absolute right-0 mt-1 w-44 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-lg dark:shadow-black/30 z-20 py-1 overflow-hidden">
-          <button onClick={() => { setOpen(false); onViewDetail(student.id); }}
+          <button onClick={() => { setOpen(false); onViewDetail(student.studentId); }}
             className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700/50">
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -60,7 +60,7 @@ function ActionMenu({ student, onEdit, onDelete, onActivate, onDeactivate, onVie
             Edit
           </button>
           {student.isActive ? (
-            <button onClick={() => { setOpen(false); onDeactivate(student.id); }}
+            <button onClick={() => { setOpen(false); onDeactivate(student.studentId); }}
               className="flex w-full items-center gap-2 px-4 py-2 text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -68,7 +68,7 @@ function ActionMenu({ student, onEdit, onDelete, onActivate, onDeactivate, onVie
               Deactivate
             </button>
           ) : (
-            <button onClick={() => { setOpen(false); onActivate(student.id); }}
+            <button onClick={() => { setOpen(false); onActivate(student.studentId); }}
               className="flex w-full items-center gap-2 px-4 py-2 text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-500/10">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -143,7 +143,7 @@ export default function StudentTable({ students, loading, onEdit, onDelete, onAc
         </thead>
         <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
           {students.map((student) => (
-            <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors">
+            <tr key={student.studentId || student.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors">
               <td className="px-4 py-3 font-mono text-gray-800 dark:text-slate-200 font-medium">{student.studentId}</td>
               <td className="px-4 py-3 text-gray-800 dark:text-slate-200">{student.displayName}</td>
               <td className="px-4 py-3 text-gray-600 dark:text-slate-400 text-xs">{student.email}</td>

@@ -30,8 +30,10 @@ export default function ViewStudentDetailModal({ studentId, onClose }) {
   useEffect(() => {
     async function fetchStudent() {
       try {
-        const data = await getStudent(studentId);
-        setStudent(data);
+        const response = await getStudent(studentId);
+        // Extract data from axios response
+        const studentData = response.data?.data || response.data;
+        setStudent(studentData);
       } catch (err) {
         console.error('Failed to fetch student:', err);
       } finally {
