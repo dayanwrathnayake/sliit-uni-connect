@@ -33,6 +33,15 @@ export default function ClubsDiscoveryPage() {
     return matchesCategory && matchesSearch && matchesFollowing;
   });
 
+  // Sort: if user is club admin, show their own club first
+  const sorted = filtered.sort((a, b) => {
+    if (isClubAdmin(store)) {
+      if (a.isAdmin === true) return -1;
+      if (b.isAdmin === true) return 1;
+    }
+    return 0;
+  });
+
   return (
     <PageLayout>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -108,7 +117,7 @@ export default function ClubsDiscoveryPage() {
           </div>
         ) : error ? (
           <div className="text-center py-16 text-gray-500 dark:text-slate-400">{error}</div>
-        ) : filtered.length === 0 ? (
+        ) : sorted.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">🔍</div>
             <h3 className="text-base font-semibold text-gray-700 dark:text-slate-300 mb-1">No clubs found</h3>
@@ -116,7 +125,7 @@ export default function ClubsDiscoveryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map((club) => (
+            {sorted.map((club) => (
               <ClubCard key={club.id} club={club} />
             ))}
           </div>
