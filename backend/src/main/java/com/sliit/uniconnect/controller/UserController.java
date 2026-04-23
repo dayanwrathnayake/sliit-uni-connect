@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -40,7 +41,16 @@ public class UserController {
         return ResponseEntity.ok(userService.updateProfile(authenticatedUserId, dto));
     }
 
-    // ── 3. GET /api/users/search?query=xxx — auth required ───────────────────
+    // ── 3. DELETE /api/users/me — delete own account (auth required) ─────────
+    @DeleteMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Map<String, Object>> deleteOwnAccount() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String authenticatedUserId = auth.getName();
+        return ResponseEntity.ok(userService.deleteOwnAccount(authenticatedUserId));
+    }
+
+    // ── 4. GET /api/users/search?query=xxx — auth required ───────────────────
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<UserProfileDTO>> searchUsers(
