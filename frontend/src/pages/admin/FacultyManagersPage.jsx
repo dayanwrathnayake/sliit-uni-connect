@@ -33,7 +33,7 @@ export default function FacultyManagersPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6">
+      <div className="h-full overflow-y-auto p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <h1 className="text-xl font-semibold text-gray-800">Faculty Managers</h1>

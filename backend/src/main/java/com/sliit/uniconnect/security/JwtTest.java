@@ -29,11 +29,10 @@ public class JwtTest {
 
             System.out.println("Trying to build token...");
             String token = Jwts.builder()
-                    .subject(userId)
-                    .claims(claims)
-                    .subject(userId)          // re-set subject after .claims() replaces the map
-                    .issuedAt(now)
-                    .expiration(expiry)
+                    .setSubject(userId)
+                    .setClaims(claims)
+                    .setIssuedAt(now)
+                    .setExpiration(expiry)
                     .signWith(secretKey)
                     .compact();
                     

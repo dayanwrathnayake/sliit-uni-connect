@@ -51,6 +51,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET,    "/api/staff/faculty-managers").hasRole("SYSTEM_ADMIN")
                     .requestMatchers(HttpMethod.DELETE, "/api/staff/**").hasRole("SYSTEM_ADMIN")
                     .requestMatchers("/api/admin/users/**").hasRole("SYSTEM_ADMIN")
+                    .requestMatchers("/api/admin/students/**").hasRole("SYSTEM_ADMIN")
 
                     // M2 Module: Events & Chat
                     .requestMatchers("/api/events/**", "/api/chat/**").authenticated()

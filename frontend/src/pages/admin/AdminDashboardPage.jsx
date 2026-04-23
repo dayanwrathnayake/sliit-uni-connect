@@ -48,7 +48,7 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6 max-w-5xl mx-auto">
+      <div className="h-full overflow-y-auto p-6 max-w-5xl mx-auto">
         {/* Page header */}
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-gray-800 dark:text-slate-100">Dashboard Overview</h1>
