@@ -21,6 +21,7 @@ import ClubApprovalPage from './pages/ClubApprovalPage';
 import NotificationsPage from './pages/notifications/NotificationsPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
+import StudentManagementPage from './pages/admin/StudentManagementPage';
 import FacultyManagersPage from './pages/admin/FacultyManagersPage';
 import ShopHomePage from './pages/ShopHomePage';
 import ProductDetailPage from './pages/ProductDetailPage';
@@ -88,6 +89,7 @@ export default function App() {
             {/* Admin dashboard routes */}
             <Route path="/admin/dashboard"          element={<AdminDashboardPage />} />
             <Route path="/admin/users"              element={<AdminUsersPage />} />
+            <Route path="/admin/users/students"     element={<StudentManagementPage />} />
             <Route path="/admin/faculty-managers"   element={<FacultyManagersPage />} />
 
             <Route path="/events"           element={<CalendarView />} />

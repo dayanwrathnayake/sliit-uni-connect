@@ -33,6 +33,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     long countByIsEmailVerifiedTrue();
     long countByIsEmailVerifiedFalse();
     long countByRole(Role role);
+    List<User> findByRole(Role role);
     List<User> findAllByOrderByCreatedAtDesc();
 }
 

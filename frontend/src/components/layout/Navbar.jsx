@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 import { avatarColour, initials } from '../profile/ProfileCard';
-import { canApproveClubs, isStudent } from '../../utils/roles';
+import { canApproveClubs, isStudent, isSystemAdmin } from '../../utils/roles';
 import NotificationBell from '../notifications/NotificationBell';
 import useCartStore from '../../store/cartStore';
 
@@ -175,27 +175,45 @@ export default function Navbar() {
 
                 {dropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 rounded-xl bg-slate-800 border border-slate-700 shadow-xl py-1 overflow-hidden">
-                    <Link
-                      to="/profile/me"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
-                    >
-                      <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      My Profile
-                    </Link>
-                    <Link
-                      to="/profile/edit"
-                      onClick={() => setDropdownOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
-                    >
-                      <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                      Edit Profile
-                    </Link>
-                    <div className="my-1 border-t border-slate-700" />
+                    {isSystemAdmin(store) ? (
+                      <>
+                        <Link
+                          to="/admin/dashboard"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
+                        >
+                          <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-3m0 0l7-4 7 4M5 9v10a1 1 0 001 1h12a1 1 0 001-1V9M9 12l3 3m0 0l3-3" />
+                          </svg>
+                          Dashboard
+                        </Link>
+                        <div className="my-1 border-t border-slate-700" />
+                      </>
+                    ) : (
+                      <>
+                        <Link
+                          to="/profile/me"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
+                        >
+                          <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          My Profile
+                        </Link>
+                        <Link
+                          to="/profile/edit"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-700 transition-colors"
+                        >
+                          <svg className="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Edit Profile
+                        </Link>
+                        <div className="my-1 border-t border-slate-700" />
+                      </>
+                    )}
                     <button
                       onClick={() => { setDropdownOpen(false); logout(); }}
                       className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-red-400 hover:bg-slate-700 transition-colors"
@@ -264,7 +282,14 @@ export default function Navbar() {
                 <span className="text-sm font-medium text-white">{displayName}</span>
               </div>
               <Link to="/home" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Home</Link>
-              <Link to="/profile/me" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">My Profile</Link>
+              {isSystemAdmin(store) ? (
+                <Link to="/admin/dashboard" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Dashboard</Link>
+              ) : (
+                <>
+                  <Link to="/profile/me" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">My Profile</Link>
+                  <Link to="/profile/edit" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Edit Profile</Link>
+                </>
+              )}
               <Link to="/clubs" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Clubs</Link>
               <Link to="/shop" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">E-Shop</Link>
               <Link to="/shop/cart" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors flex items-center justify-between">
@@ -274,7 +299,6 @@ export default function Navbar() {
               {canApproveClubs(store) && (
                 <Link to="/admin/clubs/pending" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-orange-400 hover:bg-slate-800 transition-colors font-medium">Approvals</Link>
               )}
-              <Link to="/profile/edit" onClick={() => setMobileOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-slate-200 hover:bg-slate-800 transition-colors">Edit Profile</Link>
               <button onClick={() => { setMobileOpen(false); logout(); }} className="block w-full text-left rounded-lg px-3 py-2.5 text-sm text-red-400 hover:bg-slate-800 transition-colors">
                 Logout
               </button>
