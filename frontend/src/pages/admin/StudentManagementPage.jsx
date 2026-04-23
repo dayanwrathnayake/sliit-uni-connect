@@ -187,179 +187,184 @@ export default function StudentManagementPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Student Management</h1>
-            <span className="bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-full px-3 py-1 text-sm font-medium">
-              {Array.isArray(students) ? students.length : 0} shown
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleExportPDF}
-              disabled={!Array.isArray(students) || students.length === 0}
-              className="flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Export as PDF report"
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              PDF
-            </button>
-            <button
-              onClick={handleExportCSV}
-              disabled={!Array.isArray(students) || students.length === 0}
-              className="flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Export as CSV file"
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              CSV
-            </button>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              Create Student
-            </button>
-          </div>
-        </div>
-
-        {/* API Error Alert */}
-        {apiError && (
-          <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg">
-            <div className="flex items-start gap-3">
-              <svg className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" />
-              </svg>
-              <div className="flex-1">
-                <h3 className="font-semibold text-amber-900 dark:text-amber-200">Backend API Error</h3>
-                <p className="text-sm text-amber-800 dark:text-amber-300 mt-1">{apiError}</p>
-                <p className="text-xs text-amber-700 dark:text-amber-400 mt-2">
-                  ℹ️ Showing sample data for demonstration. Please ensure the backend `/api/admin/students` endpoint is implemented and running.
-                </p>
-              </div>
+      {/* Fixed top section — never scrolls */}
+      <div className="flex flex-col h-full">
+        <div className="flex-shrink-0 px-6 pt-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Student Management</h1>
+              <span className="bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 rounded-full px-3 py-1 text-sm font-medium">
+                {Array.isArray(students) ? students.length : 0} shown
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportPDF}
+                disabled={!Array.isArray(students) || students.length === 0}
+                className="flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Export as PDF report"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                PDF
+              </button>
+              <button
+                onClick={handleExportCSV}
+                disabled={!Array.isArray(students) || students.length === 0}
+                className="flex items-center gap-2 px-3 py-2.5 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Export as CSV file"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                CSV
+              </button>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Create Student
+              </button>
             </div>
           </div>
-        )}
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-slate-400 mb-1">Total Students</p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white">{Array.isArray(students) ? students.length : 0}</p>
+          {/* API Error Alert */}
+          {apiError && (
+            <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg">
+              <div className="flex items-start gap-3">
+                <svg className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" />
+                </svg>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-amber-900 dark:text-amber-200">Backend API Error</h3>
+                  <p className="text-sm text-amber-800 dark:text-amber-300 mt-1">{apiError}</p>
+                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-2">
+                    ℹ️ Showing sample data for demonstration. Please ensure the backend `/api/admin/students` endpoint is implemented and running.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Stats Row */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-slate-400 mb-1">Total Students</p>
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">{Array.isArray(students) ? students.length : 0}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-slate-400 mb-1">Active</p>
+              <p className="text-2xl font-bold text-green-600 dark:text-green-400">{Array.isArray(students) ? students.filter(s => s.isActive).length : 0}</p>
+            </div>
+            <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-slate-400 mb-1">Inactive</p>
+              <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{Array.isArray(students) ? students.filter(s => !s.isActive).length : 0}</p>
+            </div>
           </div>
-          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-slate-400 mb-1">Active</p>
-            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{Array.isArray(students) ? students.filter(s => s.isActive).length : 0}</p>
-          </div>
-          <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-slate-400 mb-1">Inactive</p>
-            <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{Array.isArray(students) ? students.filter(s => !s.isActive).length : 0}</p>
+
+          {/* Filters */}
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <input
+              type="text"
+              placeholder="Search by name or student ID…"
+              value={filters.search}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              className="flex-1 min-w-52 border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <select
+              value={filters.faculty}
+              onChange={(e) => setFilters({ ...filters, faculty: e.target.value })}
+              className="border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              {FACULTIES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+            </select>
+            <select
+              value={filters.status}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              className="border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+            {hasActiveFilter && (
+              <button
+                onClick={() => setFilters({ search: '', faculty: '', status: '' })}
+                className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors font-medium"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-3 mb-6">
-          <input
-            type="text"
-            placeholder="Search by name or student ID…"
-            value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            className="flex-1 min-w-52 border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        {/* Scrollable student list only */}
+        <div className="flex-1 overflow-y-auto px-6 pb-6">
+          <StudentTable
+            students={students}
+            loading={loading}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onActivate={handleActivate}
+            onDeactivate={handleDeactivate}
+            onViewDetail={handleViewDetail}
           />
-          <select
-            value={filters.faculty}
-            onChange={(e) => setFilters({ ...filters, faculty: e.target.value })}
-            className="border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            {FACULTIES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
-          </select>
-          <select
-            value={filters.status}
-            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-            className="border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            {STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-          </select>
-          {hasActiveFilter && (
-            <button
-              onClick={() => setFilters({ search: '', faculty: '', status: '' })}
-              className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors font-medium"
-            >
-              Reset Filters
-            </button>
+
+          {/* Infinite scroll sentinel */}
+          <div ref={sentinelRef} className="h-4" />
+          {loading && students.length > 0 && (
+            <div className="flex justify-center py-4">
+              <div className="animate-spin h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full" />
+            </div>
           )}
         </div>
-
-        {/* Table */}
-        <StudentTable
-          students={students}
-          loading={loading}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onActivate={handleActivate}
-          onDeactivate={handleDeactivate}
-          onViewDetail={handleViewDetail}
-        />
-
-        {/* Infinite scroll sentinel */}
-        <div ref={sentinelRef} className="h-4" />
-        {loading && students.length > 0 && (
-          <div className="flex justify-center py-4">
-            <div className="animate-spin h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full" />
-          </div>
-        )}
-
-        {/* Create Modal */}
-        {showCreateModal && (
-          <CreateStudentModal
-            onClose={() => setShowCreateModal(false)}
-            onSuccess={() => {
-              showToast('Student created successfully');
-              fetchStudents(0, true);
-            }}
-          />
-        )}
-
-        {/* Edit Modal */}
-        {editStudent && (
-          <EditStudentModal
-            student={editStudent}
-            onClose={() => setEditStudent(null)}
-            onSave={() => {
-              fetchStudents(0, true);
-            }}
-          />
-        )}
-
-        {/* View Detail Modal */}
-        {viewStudentId && (
-          <ViewStudentDetailModal
-            studentId={viewStudentId}
-            onClose={() => setViewStudentId(null)}
-          />
-        )}
-
-        {/* Delete Confirmation Modal */}
-        {deleteStudent_ && (
-          <DeleteConfirmationModal
-            student={deleteStudent_}
-            onClose={() => setDeleteStudent(null)}
-            onConfirm={() => {
-              fetchStudents(0, true);
-            }}
-          />
-        )}
-
-        <ToastContainer toast={toast} />
       </div>
+
+      {/* Create Modal */}
+      {showCreateModal && (
+        <CreateStudentModal
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={() => {
+            showToast('Student created successfully');
+            fetchStudents(0, true);
+          }}
+        />
+      )}
+
+      {/* Edit Modal */}
+      {editStudent && (
+        <EditStudentModal
+          student={editStudent}
+          onClose={() => setEditStudent(null)}
+          onSave={() => {
+            fetchStudents(0, true);
+          }}
+        />
+      )}
+
+      {/* View Detail Modal */}
+      {viewStudentId && (
+        <ViewStudentDetailModal
+          studentId={viewStudentId}
+          onClose={() => setViewStudentId(null)}
+        />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteStudent_ && (
+        <DeleteConfirmationModal
+          student={deleteStudent_}
+          onClose={() => setDeleteStudent(null)}
+          onConfirm={() => {
+            fetchStudents(0, true);
+          }}
+        />
+      )}
+
+      <ToastContainer toast={toast} />
     </AdminLayout>
   );
 }

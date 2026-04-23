@@ -93,9 +93,9 @@ function ActionMenu({ student, onEdit, onDelete, onActivate, onDeactivate, onVie
 export default function StudentTable({ students, loading, onEdit, onDelete, onActivate, onDeactivate, onViewDetail }) {
   if (loading && students.length === 0) {
     return (
-      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg">
         <table className="w-full">
-          <thead className="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-200 dark:border-slate-700">
+          <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-slate-700/50 border-b border-gray-200 dark:border-slate-700">
             <tr>
               <th className="px-4 py-3 text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider text-left">Student ID</th>
               <th className="px-4 py-3 text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider text-left">Name</th>
@@ -128,9 +128,9 @@ export default function StudentTable({ students, loading, onEdit, onDelete, onAc
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg">
       <table className="w-full text-sm">
-        <thead className="bg-gray-50 dark:bg-slate-700/50 border-b border-gray-200 dark:border-slate-700">
+        <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-slate-700/50 border-b border-gray-200 dark:border-slate-700">
           <tr>
             <th className="px-4 py-3 text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider text-left">Student ID</th>
             <th className="px-4 py-3 text-xs font-semibold text-gray-600 dark:text-slate-300 uppercase tracking-wider text-left">Name</th>
