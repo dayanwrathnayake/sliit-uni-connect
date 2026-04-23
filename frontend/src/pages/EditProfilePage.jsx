@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore';
 import PageLayout from '../components/layout/PageLayout';
 import AvatarUploader from '../components/profile/AvatarUploader';
 
+
 // ── Faculty → department mapping ─────────────────────────────────────────
 // Each faculty only shows its own departments in the dropdown.
 const FACULTY_DEPARTMENTS = {
@@ -93,6 +94,7 @@ export default function EditProfilePage() {
   const [toast, setToast] = useState(false);
   const [currentProfile, setCurrentProfile] = useState(null);
 
+
   // Fetch full profile (has studentId, email, department, bio, etc.)
   useEffect(() => {
     if (!userId) return;
@@ -100,6 +102,7 @@ export default function EditProfilePage() {
       .then(({ data }) => setCurrentProfile(data))
       .catch(() => { });
   }, [userId]);
+
 
   const {
     register,

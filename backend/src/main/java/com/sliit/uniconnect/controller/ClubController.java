@@ -143,4 +143,12 @@ public class ClubController {
         clubService.deletePost(currentUserId(), postId);
         return ResponseEntity.noContent().build();
     }
+
+    // ── DELETE /api/clubs/{clubId} — club admin deletes their own club ────────
+    @DeleteMapping("/{clubId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteClub(@PathVariable String clubId) {
+        clubService.deleteClub(currentUserId(), clubId);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useClubs } from '../hooks/useClubs';
 import { isStudent, isClubAdmin } from '../utils/roles';
+import { useSearchParams } from 'react-router-dom';
 import ClubCard from '../components/clubs/ClubCard';
 import RequestClubModal from '../components/clubs/RequestClubModal';
 import PageLayout from '../components/layout/PageLayout';
@@ -17,16 +18,28 @@ const CATEGORIES = [
 export default function ClubsDiscoveryPage() {
   const store = useAuthStore();
   const { clubs, loading, error } = useClubs();
+  const [searchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(searchParams.get('filter') === 'following');
 
   const canRequest = isStudent(store) && !isClubAdmin(store);
 
   const filtered = clubs.filter((club) => {
     const matchesCategory = activeCategory === 'ALL' || club.category === activeCategory;
     const matchesSearch = !search || club.name.toLowerCase().includes(search.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const matchesFollowing = !showFollowing || club.isFollowing === true;
+    return matchesCategory && matchesSearch && matchesFollowing;
+  });
+
+  // Sort: if user is club admin, show their own club first
+  const sorted = filtered.sort((a, b) => {
+    if (isClubAdmin(store)) {
+      if (a.isAdmin === true) return -1;
+      if (b.isAdmin === true) return 1;
+    }
+    return 0;
   });
 
   return (
@@ -81,6 +94,18 @@ export default function ClubsDiscoveryPage() {
               {cat.label}
             </button>
           ))}
+          {isStudent(store) && (
+            <button
+              onClick={() => setShowFollowing((v) => !v)}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                showFollowing
+                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
+                  : 'border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-800'
+              }`}
+            >
+              My Followed
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -92,7 +117,7 @@ export default function ClubsDiscoveryPage() {
           </div>
         ) : error ? (
           <div className="text-center py-16 text-gray-500 dark:text-slate-400">{error}</div>
-        ) : filtered.length === 0 ? (
+        ) : sorted.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-4xl mb-3">🔍</div>
             <h3 className="text-base font-semibold text-gray-700 dark:text-slate-300 mb-1">No clubs found</h3>
@@ -100,7 +125,7 @@ export default function ClubsDiscoveryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map((club) => (
+            {sorted.map((club) => (
               <ClubCard key={club.id} club={club} />
             ))}
           </div>

@@ -1,6 +1,9 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { isClubAdmin } from '../../utils/roles';
+import { getAllClubs } from '../../api/clubApi';
+import api from '../../api/axios';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -11,8 +14,29 @@ function getGreeting() {
 
 export default function WelcomeCard() {
   const store = useAuthStore();
-  const { displayName, profilePicUrl, faculty } = store;
+  const navigate = useNavigate();
+  const { displayName, profilePicUrl, faculty, userId } = store;
   const firstLetter = (displayName || '?')[0].toUpperCase();
+  const [loadingClub, setLoadingClub] = useState(false);
+  const [studentId, setStudentId] = useState(null);
+
+  useEffect(() => {
+    if (!userId) return;
+    api.get(`/api/users/${userId}/profile`)
+      .then(({ data }) => setStudentId(data.studentId))
+      .catch(() => {});
+  }, [userId]);
+
+  async function handleMyClub() {
+    setLoadingClub(true);
+    try {
+      const clubs = await getAllClubs();
+      const myClub = clubs.find((c) => c.isAdmin === true);
+      if (myClub) navigate(`/clubs/${myClub.id}`);
+    } finally {
+      setLoadingClub(false);
+    }
+  }
 
   const facultyLabel = {
     COMPUTING:              'Computing',
@@ -34,17 +58,20 @@ export default function WelcomeCard() {
           <img
             src={profilePicUrl}
             alt={displayName}
-            className="h-12 w-12 rounded-full object-cover ring-2 ring-white dark:ring-slate-700 shadow-sm flex-shrink-0"
+            className="h-16 w-16 rounded-full object-cover ring-2 ring-white dark:ring-slate-700 shadow-sm flex-shrink-0"
           />
         ) : (
-          <div className="h-12 w-12 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center ring-2 ring-white dark:ring-slate-700 shadow-sm flex-shrink-0">
-            <span className="text-lg font-bold text-white">{firstLetter}</span>
+          <div className="h-16 w-16 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center ring-2 ring-white dark:ring-slate-700 shadow-sm flex-shrink-0">
+            <span className="text-2xl font-bold text-white">{firstLetter}</span>
           </div>
         )}
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-800 dark:text-slate-100 truncate">{displayName}</p>
+          <p className="text-base font-semibold text-gray-800 dark:text-slate-100 truncate">{displayName}</p>
+          {studentId && (
+            <p className="text-sm font-mono font-medium text-indigo-500 dark:text-indigo-400 truncate">{studentId}</p>
+          )}
           {facultyLabel && (
-            <span className="inline-block text-[10px] font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full px-2 py-0.5 mt-0.5">
+            <span className="inline-block text-xs font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full px-2 py-0.5 mt-0.5">
               {facultyLabel}
             </span>
           )}
@@ -60,18 +87,19 @@ export default function WelcomeCard() {
           My Profile
         </Link>
         {isClubAdmin(store) ? (
+          <button
+            onClick={handleMyClub}
+            disabled={loadingClub}
+            className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-indigo-100 dark:border-slate-600 rounded-lg py-2 transition-colors disabled:opacity-60"
+          >
+            {loadingClub ? '…' : 'My Club'}
+          </button>
+        ) : (
           <Link
-            to="/clubs"
+            to="/clubs?filter=following"
             className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-indigo-100 dark:border-slate-600 rounded-lg py-2 transition-colors"
           >
             My Club
-          </Link>
-        ) : (
-          <Link
-            to="/clubs"
-            className="flex-1 text-center text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 border border-indigo-100 dark:border-slate-600 rounded-lg py-2 transition-colors"
-          >
-            Explore Clubs
           </Link>
         )}
         <Link
