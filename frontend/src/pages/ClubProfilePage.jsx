@@ -5,12 +5,65 @@ import { useClub } from '../hooks/useClub';
 import { likePost } from '../api/clubApi';
 import { isStudent } from '../utils/roles';
 import { useToast } from '../hooks/useToast';
+import api from '../api/axios';
 import ToastContainer from '../components/common/ToastContainer';
 import CategoryBadge from '../components/clubs/CategoryBadge';
 import FollowButton from '../components/clubs/FollowButton';
 import PostCard from '../components/clubs/PostCard';
 import CreatePostModal from '../components/clubs/CreatePostModal';
 import PageLayout from '../components/layout/PageLayout';
+
+// ── Delete Club Modal ─────────────────────────────────────────────────────
+function DeleteClubModal({ clubName, onConfirm, onCancel, loading, error }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+      <div className="w-full max-w-md rounded-2xl bg-slate-900 border border-red-500/30 p-6 shadow-2xl">
+        <div className="flex justify-center mb-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-500/10 border border-red-500/30">
+            <svg className="h-7 w-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+            </svg>
+          </div>
+        </div>
+
+        <h2 className="text-center text-lg font-bold text-white mb-2">Delete Club</h2>
+        <p className="text-center text-sm text-slate-400 mb-1">
+          You are about to permanently delete{' '}
+          <span className="font-semibold text-white">"{clubName}"</span>.
+        </p>
+        <p className="text-center text-sm text-slate-500 mb-6">
+          All posts and club data will be removed. This action{' '}
+          <span className="text-red-400 font-semibold">cannot be undone</span>.
+        </p>
+
+        {error && (
+          <div className="mb-4 rounded-xl bg-red-500/10 border border-red-500/20 px-4 py-3">
+            <p className="text-sm text-red-400">{error}</p>
+          </div>
+        )}
+
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            className="flex-1 rounded-xl border border-slate-700 bg-slate-800 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-700 transition disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-500 py-2.5 text-sm font-semibold text-white transition disabled:opacity-60"
+          >
+            {loading ? (
+              <><div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Deleting…</>
+            ) : 'Yes, Delete Club'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function SkeletonLoader() {
   return (
@@ -39,9 +92,24 @@ export default function ClubProfilePage() {
   const { showToast, toast } = useToast();
   const [activeTab, setActiveTab] = useState('posts');
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const userIsThisClubAdmin = club?.isAdmin === true;
   const userCanFollow = isStudent(store) && !club?.isAdmin;
+
+  async function handleDeleteClub() {
+    setDeleteError('');
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/api/clubs/${clubId}`);
+      navigate('/clubs', { replace: true });
+    } catch (err) {
+      setDeleteError(err.response?.data?.error || 'Failed to delete club. Please try again.');
+      setDeleteLoading(false);
+    }
+  }
 
   async function handleLikeToggle(postId) {
     try {
@@ -84,31 +152,29 @@ export default function ClubProfilePage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
 
         {/* ── Club header card ── */}
-        <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm px-6 pt-0 pb-5 -mt-10 relative z-10">
+        <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl shadow-sm px-6 pt-0 pb-6 -mt-10 relative z-10">
 
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
 
             {/* Left: Avatar + text */}
-            <div className="flex items-end gap-4">
+            <div className="flex items-end gap-5">
               {club.profilePicUrl ? (
                 <img
                   src={club.profilePicUrl}
                   alt={club.name}
-                  className="h-20 w-20 rounded-full border-4 border-white dark:border-slate-800 object-cover shadow-md flex-shrink-0 -mt-10"
+                  className="h-24 w-24 rounded-full border-4 border-white dark:border-slate-800 object-cover shadow-lg flex-shrink-0 -mt-10"
                 />
               ) : (
-                <div className="h-20 w-20 rounded-full border-4 border-white dark:border-slate-800 bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-md flex-shrink-0 -mt-10">
+                <div className="h-24 w-24 rounded-full border-4 border-white dark:border-slate-800 bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg flex-shrink-0 -mt-10">
                   <span className="text-3xl font-bold text-white">{firstLetter}</span>
                 </div>
               )}
 
-              <div className="pb-1">
-                <h1 className="text-xl font-bold text-gray-900 dark:text-slate-100 leading-tight">
+              <div className="pb-2 space-y-1 pt-6">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100 leading-tight">
                   {club.name}
                 </h1>
-                <div className="mt-1 mb-1">
-                  <CategoryBadge category={club.category} />
-                </div>
+                <CategoryBadge category={club.category} />
                 <p className="text-sm text-gray-500 dark:text-slate-400">
                   {club.followerCount ?? 0}{' '}
                   {club.followerCount === 1 ? 'follower' : 'followers'}
@@ -117,7 +183,7 @@ export default function ClubProfilePage() {
             </div>
 
             {/* Right: Action buttons */}
-            <div className="flex items-center gap-2 pb-1 flex-wrap">
+            <div className="flex items-center gap-3 pb-2 flex-wrap sm:flex-nowrap">
               {userCanFollow && (
                 <FollowButton
                   clubId={clubId}
@@ -153,11 +219,10 @@ export default function ClubProfilePage() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
-                activeTab === tab
+              className={`pb-3 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${activeTab === tab
                   ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400'
                   : 'border-transparent text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'
-              }`}
+                }`}
             >
               {tab}
             </button>
@@ -166,7 +231,7 @@ export default function ClubProfilePage() {
 
         {/* ── Tab content ── */}
         {activeTab === 'posts' ? (
-          <div className="space-y-4">
+          <div className="space-y-4 max-w-3xl mx-auto">
             {posts.length === 0 ? (
               <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
                 <p className="text-4xl mb-3">📭</p>
@@ -190,33 +255,59 @@ export default function ClubProfilePage() {
           </div>
         ) : (
           /* About tab */
-          <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6 max-w-2xl">
-            <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-3">About this club</h2>
-            <p className="text-gray-700 dark:text-slate-300 leading-relaxed mb-5 text-sm">{club.description}</p>
-            <div className="space-y-2.5 text-sm">
-              <div className="flex items-center gap-3">
-                <span className="text-gray-400 dark:text-slate-500 w-28 flex-shrink-0">Category</span>
-                <CategoryBadge category={club.category} />
-              </div>
-              {club.createdAt && (
+          <div className="space-y-4">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-slate-100 mb-3">About this club</h2>
+              <p className="text-gray-700 dark:text-slate-300 leading-relaxed mb-5 text-sm">{club.description}</p>
+              <div className="space-y-2.5 text-sm">
                 <div className="flex items-center gap-3">
-                  <span className="text-gray-400 dark:text-slate-500 w-28 flex-shrink-0">Created</span>
-                  <span className="text-gray-700 dark:text-slate-300">
-                    {new Date(club.createdAt).toLocaleDateString('en-LK', {
-                      year: 'numeric', month: 'long', day: 'numeric',
-                    })}
-                  </span>
+                  <span className="text-gray-400 dark:text-slate-500 w-28 flex-shrink-0">Category</span>
+                  <CategoryBadge category={club.category} />
                 </div>
-              )}
-              <div className="flex items-center gap-3">
-                <span className="text-gray-400 dark:text-slate-500 w-28 flex-shrink-0">Managed by</span>
-                <span className="font-medium text-gray-900 dark:text-slate-200">{club.adminName}</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-400 dark:text-slate-500 w-28 flex-shrink-0">Followers</span>
-                <span className="text-gray-700 dark:text-slate-300">{club.followerCount ?? 0}</span>
+                {club.createdAt && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-gray-400 dark:text-slate-500 w-28 flex-shrink-0">Created</span>
+                    <span className="text-gray-700 dark:text-slate-300">
+                      {new Date(club.createdAt).toLocaleDateString('en-LK', {
+                        year: 'numeric', month: 'long', day: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-400 dark:text-slate-500 w-28 flex-shrink-0">Managed by</span>
+                  <span className="font-medium text-gray-900 dark:text-slate-200">{club.adminName}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-400 dark:text-slate-500 w-28 flex-shrink-0">Followers</span>
+                  <span className="text-gray-700 dark:text-slate-300">{club.followerCount ?? 0}</span>
+                </div>
               </div>
             </div>
+
+            {/* Danger Zone — club owner only */}
+            {userIsThisClubAdmin && (
+              <div className="rounded-2xl border border-red-500/20 bg-slate-900 p-5">
+                <p className="text-xs font-semibold uppercase tracking-widest text-red-400/70 mb-3">
+                  Danger Zone
+                </p>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-slate-300">Delete this club</p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Permanently removes the club and all its posts.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setDeleteError(''); setShowDeleteModal(true); }}
+                    className="shrink-0 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/20 hover:border-red-500/60 transition"
+                  >
+                    Delete Club
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -226,6 +317,16 @@ export default function ClubProfilePage() {
           clubId={clubId}
           onClose={() => setShowCreatePost(false)}
           onPostCreated={refetch}
+        />
+      )}
+
+      {showDeleteModal && (
+        <DeleteClubModal
+          clubName={club.name}
+          loading={deleteLoading}
+          error={deleteError}
+          onConfirm={handleDeleteClub}
+          onCancel={() => { setShowDeleteModal(false); setDeleteError(''); }}
         />
       )}
     </PageLayout>

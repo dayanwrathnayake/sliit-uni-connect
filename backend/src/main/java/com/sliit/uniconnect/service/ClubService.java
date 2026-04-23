@@ -402,6 +402,27 @@ public class ClubService {
         clubPostRepository.delete(post);
     }
 
+    // ── 15. Delete a club (club admin only) ───────────────────────────────────
+    public void deleteClub(String requestingUserId, String clubId) {
+        Club club = findClubOrThrow(clubId);
+
+        if (!club.getAdminId().equals(requestingUserId)) {
+            throw new UnauthorizedClubActionException(
+                    "Only the club owner can delete this club.");
+        }
+
+        // Remove all posts belonging to this club
+        clubPostRepository.deleteByClubId(clubId);
+
+        // Revert the admin's role back to STUDENT
+        userRepository.findById(requestingUserId).ifPresent(user -> {
+            user.setRole(Role.STUDENT);
+            userRepository.save(user);
+        });
+
+        clubRepository.delete(club);
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private Club findClubOrThrow(String clubId) {

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useClubs } from '../hooks/useClubs';
 import { isStudent, isClubAdmin } from '../utils/roles';
+import { useSearchParams } from 'react-router-dom';
 import ClubCard from '../components/clubs/ClubCard';
 import RequestClubModal from '../components/clubs/RequestClubModal';
 import PageLayout from '../components/layout/PageLayout';
@@ -17,16 +18,19 @@ const CATEGORIES = [
 export default function ClubsDiscoveryPage() {
   const store = useAuthStore();
   const { clubs, loading, error } = useClubs();
+  const [searchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(searchParams.get('filter') === 'following');
 
   const canRequest = isStudent(store) && !isClubAdmin(store);
 
   const filtered = clubs.filter((club) => {
     const matchesCategory = activeCategory === 'ALL' || club.category === activeCategory;
     const matchesSearch = !search || club.name.toLowerCase().includes(search.toLowerCase());
-    return matchesCategory && matchesSearch;
+    const matchesFollowing = !showFollowing || club.isFollowing === true;
+    return matchesCategory && matchesSearch && matchesFollowing;
   });
 
   return (
@@ -81,6 +85,18 @@ export default function ClubsDiscoveryPage() {
               {cat.label}
             </button>
           ))}
+          {isStudent(store) && (
+            <button
+              onClick={() => setShowFollowing((v) => !v)}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                showFollowing
+                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-400'
+                  : 'border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:border-gray-300 dark:hover:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-800'
+              }`}
+            >
+              My Followed
+            </button>
+          )}
         </div>
 
         {/* Content */}

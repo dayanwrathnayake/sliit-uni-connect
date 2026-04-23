@@ -89,7 +89,7 @@ export default function PostCard({ post, clubId, onLikeToggle, showClubHeader = 
     <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
       {/* Header */}
       {showClubHeader && (
-        <div className="flex items-center gap-3 p-4 sm:p-5 pb-0 sm:pb-0">
+        <div className="flex items-center gap-3 p-4 sm:p-5 pb-4 sm:pb-4">
           <Link to={`/clubs/${clubId}`} className="flex-shrink-0">
             {post.authorAvatarUrl ? (
               <img src={post.authorAvatarUrl} alt={post.authorName} className="h-10 w-10 rounded-full object-cover ring-2 ring-gray-100 dark:ring-slate-700" />
@@ -101,7 +101,7 @@ export default function PostCard({ post, clubId, onLikeToggle, showClubHeader = 
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <Link to={`/clubs/${clubId}`} className="text-sm font-semibold text-gray-900 dark:text-slate-100 truncate hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+              <Link to={`/clubs/${clubId}`} className="text-base font-semibold text-gray-900 dark:text-slate-100 truncate hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                 {post.authorName}
               </Link>
               {categoryLabel && (
@@ -115,17 +115,19 @@ export default function PostCard({ post, clubId, onLikeToggle, showClubHeader = 
         </div>
       )}
 
+      {showClubHeader && <div className="border-t border-gray-100 dark:border-slate-700" />}
+
       {/* Content */}
-      <div className="px-4 sm:px-5 py-3">
-        <p className="text-sm text-gray-700 dark:text-slate-300 whitespace-pre-line leading-relaxed">
+      <div className="px-4 sm:px-5 py-4">
+        <p className="text-sm text-gray-800 dark:text-slate-200 whitespace-pre-line leading-relaxed">
           {post.content}
         </p>
       </div>
 
       {/* Post image — edge-to-edge */}
       {post.imageUrl && (
-        <div className="w-full overflow-hidden">
-          <img src={post.imageUrl} alt="Post attachment" className="w-full object-cover max-h-96" />
+        <div className="w-full bg-black/5 dark:bg-black/20">
+          <img src={post.imageUrl} alt="Post attachment" className="w-full object-contain max-h-[480px]" />
         </div>
       )}
 
