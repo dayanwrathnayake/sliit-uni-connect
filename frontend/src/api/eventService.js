@@ -31,7 +31,12 @@ export const unregisterFromEvent = async (eventId) => {
 };
 
 export const getCalendarEvents = async (year, month, filters = {}) => {
-  const params = { year, month, ...filters };
+  const params = { year, month };
+  Object.keys(filters).forEach(key => {
+    if (filters[key] !== '' && filters[key] !== null) {
+      params[key] = filters[key];
+    }
+  });
   const { data } = await api.get('/api/events/calendar', { params });
   return data;
 };

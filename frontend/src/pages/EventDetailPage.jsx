@@ -4,6 +4,8 @@ import { getEventById, registerForEvent, unregisterFromEvent, submitForApproval 
 import { useAuthStore } from '../store/authStore';
 import PageLayout from '../components/layout/PageLayout';
 import ChatDrawer from '../components/chat/ChatDrawer';
+import { getMyApplications } from '../api/volunteerService';
+import EventLeaderboard from '../components/events/EventLeaderboard';
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -14,11 +16,20 @@ export default function EventDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isApplied, setIsApplied] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   const fetchEvent = async () => {
     try {
       const data = await getEventById(id);
       setEvent(data);
+      
+      // Also check if user has already applied for volunteering
+      if (userId) {
+        const apps = await getMyApplications();
+        const hasApplied = apps.some(app => app.eventId === id);
+        setIsApplied(hasApplied);
+      }
     } catch (err) {
       setError('Event not found or failed to load');
     } finally {
@@ -76,13 +87,21 @@ export default function EventDetailPage() {
     <PageLayout>
       <div className="max-w-4xl mx-auto p-4 md:p-8">
         <div className="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xl">
-          {/* Header Image Placeholder */}
-          <div className="h-64 bg-gradient-to-r from-blue-600 to-indigo-700 flex items-center justify-center text-white">
-             <div className="text-center">
-                <span className="text-6xl mb-2 block">📅</span>
-                <h1 className="text-3xl font-bold px-4">{event.title}</h1>
-             </div>
-          </div>
+          {event.imageUrl ? (
+            <div className="h-64 w-full relative">
+              <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex items-end">
+                <h1 className="text-3xl font-bold text-white p-6 pb-8">{event.title}</h1>
+              </div>
+            </div>
+          ) : (
+            <div className="h-64 bg-gradient-to-r from-blue-600 to-indigo-700 flex items-center justify-center text-white">
+               <div className="text-center">
+                  <span className="text-6xl mb-2 block">📅</span>
+                  <h1 className="text-3xl font-bold px-4">{event.title}</h1>
+               </div>
+            </div>
+          )}
 
           <div className="p-6 md:p-10 space-y-8">
             <div className="flex flex-wrap gap-4 items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-6">
@@ -130,6 +149,7 @@ export default function EventDetailPage() {
             </div>
 
             <div className="flex flex-wrap gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+              {/* Event Registration (Attendee) */}
               {canRegister && !isFull && (
                 <button
                   onClick={handleRegister}
@@ -148,6 +168,33 @@ export default function EventDetailPage() {
                   Cancel Registration
                 </button>
               )}
+
+              {/* Volunteering Actions */}
+              {event.status === 'PUBLISHED' && !isApplied && (event.facultyScope === 'ALL_FACULTIES' || event.faculty === useAuthStore.getState().faculty) && (
+                <button
+                  onClick={() => navigate(`/volunteer/apply/${id}`)}
+                  className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all"
+                >
+                  🤝 Volunteer for this Event
+                </button>
+              )}
+              
+              {isApplied && (
+                 <div className="flex items-center gap-2 px-6 py-3 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-bold rounded-xl border border-green-100 dark:border-green-800">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    Applied to volunteer
+                 </div>
+              )}
+
+              {event.status === 'CLOSED' && (
+                <button
+                  onClick={() => setShowLeaderboard(true)}
+                  className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg shadow-amber-500/30 transition-all flex items-center gap-2"
+                >
+                  👑 Volunteer Leaderboard
+                </button>
+              )}
+
               {isCreator && event.status === 'DRAFT' && (
                 <button
                   onClick={handleSubmitApproval}
@@ -174,6 +221,14 @@ export default function EventDetailPage() {
       
       {/* Community Chat for Event */}
       <ChatDrawer eventId={event.id} eventName={event.title} />
+
+      {/* Volunteer Leaderboard Modal */}
+      <EventLeaderboard 
+        isOpen={showLeaderboard}
+        onClose={() => setShowLeaderboard(false)}
+        eventId={event.id}
+        eventStatus={event.status}
+      />
     </PageLayout>
   );
 }

@@ -16,6 +16,8 @@ const useAuthStore = create(
       displayName: null,
       role: null,
       faculty: null,
+      studentId: null,
+      pointsTotal: 0,
       userType: null,        // "STUDENT" | "STAFF"
       profilePicUrl: null,
       isAuthenticated: false,
@@ -34,6 +36,8 @@ const useAuthStore = create(
           displayName: authData.displayName,
           role: authData.role,
           faculty: authData.faculty ?? null,
+          studentId: authData.studentId ?? null,
+          pointsTotal: authData.points ?? 0,
           userType: authData.userType ?? 'STUDENT',
           profilePicUrl: authData.profilePicUrl ?? null,
           isAuthenticated: true,
@@ -51,6 +55,8 @@ const useAuthStore = create(
           displayName: null,
           role: null,
           faculty: null,
+          studentId: null,
+          pointsTotal: 0,
           userType: null,
           profilePicUrl: null,
           isAuthenticated: false,
@@ -69,6 +75,8 @@ const useAuthStore = create(
         userId:       state.userId,
         displayName:  state.displayName,
         faculty:      state.faculty,
+        studentId:    state.studentId,
+        pointsTotal:  state.pointsTotal,
       }),
     }
   )

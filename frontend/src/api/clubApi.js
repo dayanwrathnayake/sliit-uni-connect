@@ -41,6 +41,14 @@ export const createPost = (clubId, body) =>
 export const getClubPosts = (clubId) =>
   api.get(`/api/clubs/${clubId}/posts`).then((r) => r.data);
 
+/** PUT /api/clubs/:clubId/posts/:postId — club admin updates a post */
+export const updatePost = (clubId, postId, body) =>
+  api.put(`/api/clubs/${clubId}/posts/${postId}`, body).then((r) => r.data);
+
+/** DELETE /api/clubs/:clubId/posts/:postId — club admin or system admin deletes a post */
+export const deletePost = (clubId, postId) =>
+  api.delete(`/api/clubs/${clubId}/posts/${postId}`).then((r) => r.data);
+
 // ── Likes ─────────────────────────────────────────────────────────────────────
 
 /** POST /api/clubs/posts/:postId/like — toggle like */
@@ -51,6 +59,10 @@ export const likePost = (postId) =>
 export const unlikePost = (postId) => likePost(postId);
 
 // ── Staff / Admin ─────────────────────────────────────────────────────────────
+
+/** GET /api/clubs/admin/all — SYSTEM_ADMIN gets all clubs regardless of status */
+export const getAllClubsAdmin = () =>
+  api.get('/api/clubs/admin/all').then((r) => r.data);
 
 /** GET /api/clubs/pending — scoped by backend (SA sees all, FM sees own faculty) */
 export const getPendingClubs = () =>

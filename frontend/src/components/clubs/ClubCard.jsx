@@ -14,7 +14,7 @@ export default function ClubCard({ club }) {
       className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 hover:shadow-md dark:hover:shadow-slate-900/50 hover:-translate-y-0.5 transition-all cursor-pointer overflow-hidden group"
     >
       {/* Banner */}
-      <div className="h-32 w-full bg-cover bg-center overflow-hidden"
+      <div className="h-32 w-full bg-cover bg-center overflow-hidden relative z-0"
         style={club.bannerUrl ? { backgroundImage: `url(${club.bannerUrl})` } : undefined}
       >
         {!club.bannerUrl && (
@@ -30,7 +30,7 @@ export default function ClubCard({ club }) {
       {/* Avatar + Info */}
       <div className="px-4 pb-4">
         {/* Avatar — overlaps banner */}
-        <div className="-mt-8 mb-3">
+        <div className="-mt-8 mb-3 relative z-10">
           {club.profilePicUrl ? (
             <img
               src={club.profilePicUrl}

@@ -3,6 +3,10 @@ package com.sliit.uniconnect.exception;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -82,6 +86,30 @@ public class GlobalExceptionHandler {
                 .map(cv -> cv.getPropertyPath() + ": " + cv.getMessage())
                 .collect(Collectors.joining("; "));
         return errorResponse(combinedErrors, HttpStatus.BAD_REQUEST);
+    }
+
+    // ── Spring Security exceptions ────────────────────────────────────────────
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
+        return errorResponse("Access denied", HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthentication(AuthenticationException ex) {
+        return errorResponse("Unauthorized", HttpStatus.UNAUTHORIZED);
+    }
+
+    // ── Spring MVC exceptions ─────────────────────────────────────────────────
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
+        return errorResponse("Method not allowed: " + ex.getMethod(), HttpStatus.METHOD_NOT_ALLOWED);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        return errorResponse("Malformed request body", HttpStatus.BAD_REQUEST);
     }
 
     // ── Catch-all ────────────────────────────────────────────────────────────

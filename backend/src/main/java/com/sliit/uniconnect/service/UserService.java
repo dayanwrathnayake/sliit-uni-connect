@@ -3,13 +3,17 @@ package com.sliit.uniconnect.service;
 import com.sliit.uniconnect.dto.UpdateProfileRequestDTO;
 import com.sliit.uniconnect.dto.UserProfileDTO;
 import com.sliit.uniconnect.exception.UserNotFoundException;
+import com.sliit.uniconnect.model.Club;
 import com.sliit.uniconnect.model.User;
+import com.sliit.uniconnect.repository.ClubRepository;
 import com.sliit.uniconnect.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,6 +21,7 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final ClubRepository clubRepository;
 
     // ── Map User → UserProfileDTO ─────────────────────────────────────────────
     private UserProfileDTO toProfileDTO(User user) {
@@ -69,7 +74,32 @@ public class UserService {
         return toProfileDTO(saved);
     }
 
-    // ── 3. Search users by name or student ID ────────────────────────────────
+    // ── 3. Delete the authenticated user's own account ───────────────────────
+    // If the user owns a club (is a CLUB_ADMIN), that club is also deleted.
+    public Map<String, Object> deleteOwnAccount(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        boolean clubDeleted = false;
+        String deletedClubName = null;
+
+        Optional<Club> ownedClub = clubRepository.findByAdminId(userId);
+        if (ownedClub.isPresent()) {
+            deletedClubName = ownedClub.get().getName();
+            clubRepository.delete(ownedClub.get());
+            clubDeleted = true;
+        }
+
+        userRepository.delete(user);
+
+        return Map.of(
+                "message", "Account deleted successfully",
+                "clubDeleted", clubDeleted,
+                "deletedClubName", deletedClubName != null ? deletedClubName : ""
+        );
+    }
+
+    // ── 4. Search users by name or student ID ────────────────────────────────
     public List<UserProfileDTO> searchUsers(String query) {
         return userRepository
                 .findByDisplayNameContainingIgnoreCaseOrStudentIdContainingIgnoreCase(query, query)

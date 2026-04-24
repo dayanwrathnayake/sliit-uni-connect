@@ -4,7 +4,6 @@ import FeedPost from '../components/feed/FeedPost';
 import FeedEmptyState from '../components/feed/FeedEmptyState';
 import FeedLoadingSkeleton from '../components/feed/FeedLoadingSkeleton';
 import AnnouncementBanner from '../components/feed/AnnouncementBanner';
-import CreatePostCard from '../components/feed/CreatePostCard';
 import WelcomeCard from '../components/widgets/WelcomeCard';
 import QuickStatsWidget from '../components/widgets/QuickStatsWidget';
 import UpcomingEventsWidget from '../components/widgets/UpcomingEventsWidget';
@@ -53,9 +52,6 @@ export default function HomePage() {
 
           {/* Announcement banner */}
           <AnnouncementBanner />
-
-          {/* Create / quick-nav card */}
-          <CreatePostCard />
 
           {/* Error state */}
           {feed.error && (

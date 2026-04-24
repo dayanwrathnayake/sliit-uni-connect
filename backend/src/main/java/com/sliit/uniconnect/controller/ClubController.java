@@ -51,6 +51,13 @@ public class ClubController {
         return ResponseEntity.ok(clubService.getPendingClubs(currentUserId()));
     }
 
+    // ── GET /api/clubs/admin/all — SYSTEM_ADMIN gets all clubs (all statuses) ─
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<List<ClubResponseDTO>> getAllClubsAdmin() {
+        return ResponseEntity.ok(clubService.getAllClubsForAdmin(currentUserId()));
+    }
+
     // ── GET /api/clubs/my-club — get the club managed by the current user ────
     @GetMapping("/my-club")
     @PreAuthorize("isAuthenticated()")
@@ -129,6 +136,16 @@ public class ClubController {
         return ResponseEntity.ok(clubService.getClubPosts(clubId, currentUserId()));
     }
 
+    // ── PUT /api/clubs/{clubId}/posts/{postId} — Club Admin updates a post ──
+    @PutMapping("/{clubId}/posts/{postId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ClubPostResponseDTO> updatePost(
+            @PathVariable String clubId,
+            @PathVariable String postId,
+            @Valid @RequestBody CreatePostDTO dto) {
+        return ResponseEntity.ok(clubService.updatePost(currentUserId(), clubId, postId, dto));
+    }
+
     // ── POST /api/clubs/posts/{postId}/like — toggle like ───────────────────
     @PostMapping("/posts/{postId}/like")
     @PreAuthorize("isAuthenticated()")
@@ -136,11 +153,21 @@ public class ClubController {
         return ResponseEntity.ok(clubService.toggleLikePost(currentUserId(), postId));
     }
 
-    // ── DELETE /api/clubs/posts/{postId} — delete a post ────────────────────
-    @DeleteMapping("/posts/{postId}")
+    // ── DELETE /api/clubs/{clubId}/posts/{postId} — delete a post ──────────────
+    @DeleteMapping("/{clubId}/posts/{postId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> deletePost(@PathVariable String postId) {
+    public ResponseEntity<Void> deletePost(
+            @PathVariable String clubId,
+            @PathVariable String postId) {
         clubService.deletePost(currentUserId(), postId);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── DELETE /api/clubs/{clubId} — club admin deletes their own club ────────
+    @DeleteMapping("/{clubId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteClub(@PathVariable String clubId) {
+        clubService.deleteClub(currentUserId(), clubId);
         return ResponseEntity.noContent().build();
     }
 }
