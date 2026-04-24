@@ -227,6 +227,7 @@ export default function ProductManagementPage() {
                     <input
                       type="number"
                       required
+                      min="0"
                       value={formData.price}
                       onChange={e => setFormData({ ...formData, price: e.target.value })}
                       className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -237,6 +238,7 @@ export default function ProductManagementPage() {
                     <input
                       type="number"
                       required
+                      min="0"
                       value={formData.stockQuantity}
                       onChange={e => setFormData({ ...formData, stockQuantity: e.target.value })}
                       className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
