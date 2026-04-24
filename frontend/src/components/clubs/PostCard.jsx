@@ -51,11 +51,14 @@ const categoryColors = {
   FACULTY_MEDIA: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
 };
 
-export default function PostCard({ post, clubId, onLikeToggle, showClubHeader = true }) {
+export default function PostCard({ post, clubId, onLikeToggle, onEdit, onDelete, showClubHeader = true }) {
   const [liked, setLiked] = useState(post.likedByMe ?? false);
   const [count, setCount] = useState(post.likeCount ?? 0);
   const [liking, setLiking] = useState(false);
   const [pop, setPop] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const canManage = Boolean(onEdit || onDelete);
 
   async function handleLike() {
     if (liking) return;
@@ -111,6 +114,97 @@ export default function PostCard({ post, clubId, onLikeToggle, showClubHeader = 
               )}
             </div>
             <p className="text-xs text-gray-400 dark:text-slate-500">{formatTimeAgo(post.createdAt)}</p>
+          </div>
+
+          {/* Admin actions menu — only shown when callbacks provided */}
+          {canManage && (
+            <div className="relative flex-shrink-0">
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-700 dark:hover:text-slate-200 transition-colors"
+              >
+                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
+                </svg>
+              </button>
+
+              {menuOpen && (
+                <>
+                  {/* backdrop to close */}
+                  <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                  <div className="absolute right-0 top-8 z-20 w-36 rounded-xl bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-lg py-1 overflow-hidden">
+                    {onEdit && (
+                      <button
+                        onClick={() => { setMenuOpen(false); onEdit(post); }}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        <svg className="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Edit
+                      </button>
+                    )}
+                    {onDelete && (
+                      <button
+                        onClick={() => { setMenuOpen(false); onDelete(post); }}
+                        className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                      >
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Admin actions — shown when there's no club header (club page without header) */}
+      {!showClubHeader && canManage && (
+        <div className="flex justify-end px-4 pt-3 pb-0 relative">
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-slate-700 dark:hover:text-slate-200 transition-colors"
+            >
+              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
+              </svg>
+            </button>
+
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                <div className="absolute right-0 top-8 z-20 w-36 rounded-xl bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-lg py-1 overflow-hidden">
+                  {onEdit && (
+                    <button
+                      onClick={() => { setMenuOpen(false); onEdit(post); }}
+                      className="flex items-center gap-2 w-full px-4 py-2 text-sm text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      <svg className="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button
+                      onClick={() => { setMenuOpen(false); onDelete(post); }}
+                      className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

@@ -34,6 +34,7 @@ import CalendarView from './pages/CalendarView';
 import EventDetailPage from './pages/EventDetailPage';
 import MyEventsPage from './pages/MyEventsPage';
 import AdminApprovalPage from './pages/admin/AdminApprovalPage';
+import AdminClubManagementPage from './pages/admin/AdminClubManagementPage';
 import ChatPage from './pages/ChatPage';
 import VolunteerApplicationForm from './pages/volunteers/VolunteerApplicationForm';
 import MyVolunteering from './pages/volunteers/MyVolunteering';
@@ -117,7 +118,9 @@ export default function App() {
             <Route path="/admin/shop/products" element={<ProductManagement />} />
             <Route path="/admin/shop/orders" element={<OrderManagement />} />
 
-            {/* Admin — SYSTEM_ADMIN or FACULTY_MANAGER */}
+            {/* Admin — Club Management (all clubs + approvals) */}
+            <Route path="/admin/clubs" element={<AdminClubManagementPage />} />
+            {/* Keep old pending route for backward compat */}
             <Route path="/admin/clubs/pending" element={<ClubApprovalPage />} />
 
             {/* Legacy admin route */}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { getClub, updateClub } from '../api/clubApi';
-import { isClubAdmin } from '../utils/roles';
+import { isClubAdmin, isSystemAdmin } from '../utils/roles';
 import { useToast } from '../hooks/useToast';
 import ToastContainer from '../components/common/ToastContainer';
 import AvatarUploader from '../components/profile/AvatarUploader';
@@ -40,8 +40,8 @@ export default function EditClubPage() {
     async function load() {
       try {
         const data = await getClub(clubId);
-        // Access guard — must be the club admin
-        if (!isClubAdmin(store) || store.userId !== data.adminId) {
+        // Access guard — must be the club admin OR a system admin
+        if (!isSystemAdmin(store) && (!isClubAdmin(store) || store.userId !== data.adminId)) {
           navigate(`/clubs/${clubId}`, { replace: true });
           return;
         }

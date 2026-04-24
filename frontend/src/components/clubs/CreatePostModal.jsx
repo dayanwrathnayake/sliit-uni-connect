@@ -1,23 +1,26 @@
 import { useState } from 'react';
-import { createPost } from '../../api/clubApi';
+import { createPost, updatePost } from '../../api/clubApi';
 
 const MAX_CHARS = 500;
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = 'sliit_uniconnect_profiles';
 
 /**
- * Modal for Club Admins to create a new post.
+ * Modal for Club Admins to create or edit a post.
  *
  * @param {{
  *   clubId: string,
  *   onClose: () => void,
- *   onPostCreated: () => void
+ *   onPostCreated: () => void,
+ *   initialPost?: { id: string, content: string, imageUrl?: string }
  * }} props
  */
-export default function CreatePostModal({ clubId, onClose, onPostCreated }) {
-  const [content, setContent] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [imagePreview, setImagePreview] = useState('');
+export default function CreatePostModal({ clubId, onClose, onPostCreated, initialPost }) {
+  const isEditing = Boolean(initialPost);
+
+  const [content, setContent] = useState(initialPost?.content ?? '');
+  const [imageUrl, setImageUrl] = useState(initialPost?.imageUrl ?? '');
+  const [imagePreview, setImagePreview] = useState(initialPost?.imageUrl ?? '');
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -42,14 +45,19 @@ export default function CreatePostModal({ clubId, onClose, onPostCreated }) {
         setImageUrl(data.secure_url);
       } else {
         setError('Image upload failed. Please try again.');
-        setImagePreview('');
+        setImagePreview(initialPost?.imageUrl ?? '');
       }
     } catch {
       setError('Image upload failed. Please try again.');
-      setImagePreview('');
+      setImagePreview(initialPost?.imageUrl ?? '');
     } finally {
       setUploading(false);
     }
+  }
+
+  function handleRemoveImage() {
+    setImageUrl('');
+    setImagePreview('');
   }
 
   async function handleSubmit(e) {
@@ -58,25 +66,35 @@ export default function CreatePostModal({ clubId, onClose, onPostCreated }) {
     setSubmitting(true);
     setError('');
     try {
-      await createPost(clubId, {
-        content: content.trim(),
-        imageUrl: imageUrl || undefined,
-      });
+      if (isEditing) {
+        await updatePost(clubId, initialPost.id, {
+          content: content.trim(),
+          // empty string signals "remove image"; omit key entirely if unchanged
+          imageUrl: imageUrl !== (initialPost.imageUrl ?? '') ? (imageUrl || '') : undefined,
+        });
+      } else {
+        await createPost(clubId, {
+          content: content.trim(),
+          imageUrl: imageUrl || undefined,
+        });
+      }
       onPostCreated?.();
       onClose();
     } catch (err) {
-      setError(err?.response?.data?.error || 'Failed to create post. Please try again.');
+      setError(err?.response?.data?.error || `Failed to ${isEditing ? 'update' : 'create'} post. Please try again.`);
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 shadow-2xl">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 w-full max-w-lg mx-4 shadow-2xl">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-semibold text-gray-900">Create Post</h2>
-          <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+          <h2 className="text-lg font-semibold text-white">
+            {isEditing ? 'Edit Post' : 'Create Post'}
+          </h2>
+          <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors">
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -84,7 +102,7 @@ export default function CreatePostModal({ clubId, onClose, onPostCreated }) {
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          <div className="mb-4 rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
             {error}
           </div>
         )}
@@ -97,30 +115,30 @@ export default function CreatePostModal({ clubId, onClose, onPostCreated }) {
               onChange={(e) => setContent(e.target.value)}
               rows={5}
               placeholder="What's happening in your club?"
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 bg-white placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full resize-none"
+              className="border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 bg-slate-800 placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full resize-none"
               maxLength={MAX_CHARS}
             />
-            <p className={`text-xs mt-1 text-right ${content.length > MAX_CHARS * 0.9 ? 'text-orange-500' : 'text-gray-400'}`}>
+            <p className={`text-xs mt-1 text-right ${content.length > MAX_CHARS * 0.9 ? 'text-orange-400' : 'text-slate-500'}`}>
               {content.length} / {MAX_CHARS}
             </p>
           </div>
 
           {/* Image upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Attach Image (optional)
             </label>
             {imagePreview && (
-              <div className="mb-2 rounded-lg overflow-hidden border border-gray-200">
+              <div className="mb-2 rounded-lg overflow-hidden border border-slate-700">
                 <img src={imagePreview} alt="Preview" className="w-full max-h-48 object-cover" />
                 {uploading && (
-                  <div className="bg-black/40 flex items-center justify-center py-2">
-                    <span className="text-white text-xs">Uploading…</span>
+                  <div className="bg-black/50 flex items-center justify-center py-2">
+                    <span className="text-slate-300 text-xs">Uploading…</span>
                   </div>
                 )}
               </div>
             )}
-            <label className="cursor-pointer inline-flex items-center gap-2 border border-gray-300 text-gray-600 rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition-colors">
+            <label className="cursor-pointer inline-flex items-center gap-2 border border-slate-700 text-slate-300 rounded-lg px-3 py-2 text-sm hover:bg-slate-800 hover:border-slate-600 transition-colors">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -128,22 +146,22 @@ export default function CreatePostModal({ clubId, onClose, onPostCreated }) {
               <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
             </label>
             {imagePreview && !uploading && (
-              <button type="button" onClick={() => { setImageUrl(''); setImagePreview(''); }} className="ml-2 text-xs text-red-500 hover:underline">
+              <button type="button" onClick={handleRemoveImage} className="ml-2 text-xs text-red-400 hover:text-red-300 hover:underline">
                 Remove
               </button>
             )}
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 border border-gray-300 text-gray-700 rounded-lg px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors">
+            <button type="button" onClick={onClose} className="flex-1 border border-slate-700 text-slate-300 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-800 transition-colors">
               Cancel
             </button>
             <button
               type="submit"
               disabled={!canSubmit}
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg px-4 py-2 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {submitting ? 'Posting…' : 'Post'}
+              {submitting ? (isEditing ? 'Saving…' : 'Posting…') : (isEditing ? 'Save Changes' : 'Post')}
             </button>
           </div>
         </form>
@@ -151,4 +169,3 @@ export default function CreatePostModal({ clubId, onClose, onPostCreated }) {
     </div>
   );
 }
-

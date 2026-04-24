@@ -32,7 +32,7 @@ public class ClubService {
         boolean isFollowing = authenticatedUserId != null
                 && club.getFollowerIds().contains(authenticatedUserId);
         boolean isAdmin = authenticatedUserId != null
-                && authenticatedUserId.equals(club.getAdminId());
+                && (authenticatedUserId.equals(club.getAdminId()) || isSystemAdmin(authenticatedUserId));
 
         return ClubResponseDTO.builder()
                 .id(club.getId())
@@ -54,8 +54,9 @@ public class ClubService {
     }
 
     private ClubPostResponseDTO toPostResponseDTO(ClubPost post, String authenticatedUserId) {
+        List<String> liked = post.getLikedByIds() != null ? post.getLikedByIds() : List.of();
         boolean isLikedByMe = authenticatedUserId != null
-                && post.getLikedByIds().contains(authenticatedUserId);
+                && liked.contains(authenticatedUserId);
 
         return ClubPostResponseDTO.builder()
                 .id(post.getId())
@@ -333,7 +334,35 @@ public class ClubService {
         return toPostResponseDTO(saved, authorId);
     }
 
-    // ── 12. Get all posts for a club ──────────────────────────────────────────
+    // ── 12. Update a post (Club Admin only) ──────────────────────────────────
+
+    public ClubPostResponseDTO updatePost(String requestingUserId, String clubId, String postId, CreatePostDTO dto) {
+        Club club = findClubOrThrow(clubId);
+        verifyClubAdmin(requestingUserId, club);
+
+        ClubPost post = clubPostRepository.findById(postId)
+                .orElseThrow(() -> new ClubNotFoundException("Post not found with id: " + postId));
+
+        if (!clubId.equals(post.getClubId())) {
+            throw new UnauthorizedClubActionException("Post does not belong to this club.");
+        }
+
+        post.setContent(dto.getContent());
+        // Empty string means "remove the image"; null means "leave it unchanged"
+        if (dto.getImageUrl() != null) {
+            post.setImageUrl(dto.getImageUrl().isEmpty() ? null : dto.getImageUrl());
+        }
+        // Repair legacy documents that were stored without likedByIds
+        if (post.getLikedByIds() == null) {
+            post.setLikedByIds(new java.util.ArrayList<>());
+        }
+        post.setUpdatedAt(LocalDateTime.now());
+
+        ClubPost saved = clubPostRepository.save(post);
+        return toPostResponseDTO(saved, requestingUserId);
+    }
+
+    // ── 14 (was 12). Get all posts for a club ────────────────────────────────
 
     public List<ClubPostResponseDTO> getClubPosts(String clubId, String authenticatedUserId) {
         findClubOrThrow(clubId);
@@ -348,6 +377,11 @@ public class ClubService {
     public ClubPostResponseDTO toggleLikePost(String userId, String postId) {
         ClubPost post = clubPostRepository.findById(postId)
                 .orElseThrow(() -> new ClubNotFoundException("Post not found with id: " + postId));
+
+        // Guard against legacy documents that have null likedByIds
+        if (post.getLikedByIds() == null) {
+            post.setLikedByIds(new java.util.ArrayList<>());
+        }
 
         boolean isAdding = !post.getLikedByIds().contains(userId);
 
@@ -389,12 +423,19 @@ public class ClubService {
                 .orElseThrow(() -> new ClubNotFoundException("Post not found with id: " + postId));
 
         boolean isAuthor = requestingUserId.equals(post.getAuthorId());
-        // Staff admins can also delete posts
+
+        // Current club admin can always delete posts in their club
+        boolean isCurrentClubAdmin = post.getClubId() != null
+                && clubRepository.findById(post.getClubId())
+                        .map(club -> requestingUserId.equals(club.getAdminId()))
+                        .orElse(false);
+
+        // System admins can delete any post
         boolean isSystemAdmin = staffUserRepository.findById(requestingUserId)
                 .map(s -> s.getRole() == StaffRole.SYSTEM_ADMIN)
                 .orElse(false);
 
-        if (!isAuthor && !isSystemAdmin) {
+        if (!isAuthor && !isCurrentClubAdmin && !isSystemAdmin) {
             throw new UnauthorizedClubActionException(
                     "You do not have permission to delete this post.");
         }
@@ -402,25 +443,38 @@ public class ClubService {
         clubPostRepository.delete(post);
     }
 
-    // ── 15. Delete a club (club admin only) ───────────────────────────────────
+    // ── 15. Delete a club (club admin or system admin) ───────────────────────
     public void deleteClub(String requestingUserId, String clubId) {
         Club club = findClubOrThrow(clubId);
 
-        if (!club.getAdminId().equals(requestingUserId)) {
+        if (!club.getAdminId().equals(requestingUserId) && !isSystemAdmin(requestingUserId)) {
             throw new UnauthorizedClubActionException(
-                    "Only the club owner can delete this club.");
+                    "Only the club owner or system admin can delete this club.");
         }
 
         // Remove all posts belonging to this club
         clubPostRepository.deleteByClubId(clubId);
 
-        // Revert the admin's role back to STUDENT
-        userRepository.findById(requestingUserId).ifPresent(user -> {
+        // Revert the club admin's role back to STUDENT
+        userRepository.findById(club.getAdminId()).ifPresent(user -> {
             user.setRole(Role.STUDENT);
             userRepository.save(user);
         });
 
         clubRepository.delete(club);
+    }
+
+    // ── 16. Get all clubs for admin (all statuses) ────────────────────────────
+    public List<ClubResponseDTO> getAllClubsForAdmin(String adminUserId) {
+        List<Club> clubs = clubRepository.findAll();
+        clubs.sort((a, b) -> {
+            if (a.getCreatedAt() == null) return 1;
+            if (b.getCreatedAt() == null) return -1;
+            return b.getCreatedAt().compareTo(a.getCreatedAt());
+        });
+        return clubs.stream()
+                .map(c -> toResponseDTO(c, adminUserId))
+                .collect(Collectors.toList());
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -431,10 +485,16 @@ public class ClubService {
     }
 
     private void verifyClubAdmin(String userId, Club club) {
-        if (!userId.equals(club.getAdminId())) {
+        if (userId == null || (!userId.equals(club.getAdminId()) && !isSystemAdmin(userId))) {
             throw new UnauthorizedClubActionException(
                     "Only the club admin can perform this action.");
         }
+    }
+
+    private boolean isSystemAdmin(String userId) {
+        return staffUserRepository.findById(userId)
+                .map(s -> s.getRole() == StaffRole.SYSTEM_ADMIN)
+                .orElse(false);
     }
 
     // ADD: truncate helper for notification messages
