@@ -49,6 +49,8 @@ export function AuthProvider({ children }) {
           displayName: data.displayName,
           role:        data.role,
           faculty:     data.faculty,
+          studentId:   data.studentId,
+          pointsTotal: data.points ?? 0,
           userType:    'STUDENT',
         });
 
@@ -76,6 +78,8 @@ export function AuthProvider({ children }) {
         displayName: data.displayName,
         role:        data.role,
         faculty:     data.faculty,
+        studentId:   data.studentId,
+        pointsTotal: data.points ?? 0,
       });
 
       // Populate profilePicUrl right after login so Navbar shows the photo immediately

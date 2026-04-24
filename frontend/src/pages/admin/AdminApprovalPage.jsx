@@ -10,9 +10,9 @@ export default function AdminApprovalPage() {
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
 
-  const isSA = role === 'ROLE_SYSTEM_ADMIN';
-  const isDL = role === 'ROLE_DEPT_LEADER' || isSA;
-  const isFM = role === 'ROLE_FACULTY_MANAGER' || isSA;
+  const isSA = role === 'SYSTEM_ADMIN' || role === 'ROLE_SYSTEM_ADMIN';
+  const isDL = role === 'DEPT_LEADER' || role === 'ROLE_DEPT_LEADER' || isSA;
+  const isFM = role === 'FACULTY_MANAGER' || role === 'ROLE_FACULTY_MANAGER' || isSA;
 
   const fetchData = async () => {
     setLoading(true);

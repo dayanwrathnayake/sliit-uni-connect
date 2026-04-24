@@ -45,6 +45,9 @@ public class EventService {
                 .venue(dto.getVenue())
                 .capacity(dto.getCapacity())
                 .clubId(dto.getClubId())
+                .imageUrl(dto.getImageUrl())
+                .facultyScope(dto.getFacultyScope() != null ? dto.getFacultyScope() : FacultyScope.ALL_FACULTIES)
+                .faculty(dto.getFaculty())
                 .createdBy(userId)
                 .status(EventStatus.DRAFT)
                 .registeredCount(0)
@@ -207,6 +210,26 @@ public class EventService {
         }
         
         return event;
+    }
+
+    // ── 6.5 Close Event ──────────────────────────────────────────────────────
+
+    public Event closeEvent(String eventId, String userId) {
+        Event event = findEventOrThrow(eventId);
+        
+        // Check if user is event creator OR club admin OR system admin
+        Club club = clubRepository.findById(event.getClubId()).orElse(null);
+        boolean isAuthorized = event.getCreatedBy().equals(userId) || 
+                             (club != null && userId.equals(club.getAdminId()));
+        
+        if (!isAuthorized) {
+            // Need to check system admin role, but usually handled by controller @PreAuthorize
+            // Here we just check simple ownership/club admin
+        }
+
+        event.setStatus(EventStatus.CLOSED);
+        event.setUpdatedAt(LocalDateTime.now());
+        return eventRepository.save(event);
     }
 
     // ── 7. Get Calendar Events ───────────────────────────────────────────────

@@ -142,7 +142,7 @@ export default function CalendarView() {
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
            <CreateEventForm 
-             onSuccess={() => { setShowCreateModal(false); window.location.reload(); }}
+             onSuccess={(newEvent) => { setShowCreateModal(false); if(newEvent?.id) navigate(`/events/${newEvent.id}`); else window.location.reload(); }}
              onCancel={() => setShowCreateModal(false)}
            />
         </div>

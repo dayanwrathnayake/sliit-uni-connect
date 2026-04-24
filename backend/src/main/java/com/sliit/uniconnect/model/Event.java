@@ -25,6 +25,13 @@ public class Event {
     private LocalDateTime endDate;
     private String venue;
     private Integer capacity;
+    private String imageUrl;
+    
+    @Builder.Default
+    private FacultyScope facultyScope = FacultyScope.ALL_FACULTIES;
+    
+    private FacultyEnum faculty; // Optional, used when facultyScope is SPECIFIC_FACULTY
+
     
     @Builder.Default
     private Integer registeredCount = 0;

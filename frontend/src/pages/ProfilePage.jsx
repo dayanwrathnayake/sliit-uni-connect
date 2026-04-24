@@ -4,6 +4,7 @@ import api from '../api/axios';
 import { useAuthStore } from '../store/authStore';
 import PageLayout from '../components/layout/PageLayout';
 import { avatarColour, initials } from '../components/profile/ProfileCard';
+import { getMyCertificates, getMyTasks } from '../api/volunteerService';
 import shopApi from '../api/shopApi';
 
 // ── Delete Account Modal ──────────────────────────────────────────────────
@@ -74,9 +75,9 @@ const FACULTY_LABEL = {
   HUMANITIES_AND_SCIENCE: 'Faculty of Humanities & Science',
 };
 const FACULTY_STYLE = {
-  COMPUTING:            'bg-indigo-500/15 text-indigo-400 border-indigo-500/20',
-  ENGINEERING:          'bg-orange-500/15 text-orange-400 border-orange-500/20',
-  BUSINESS:             'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
+  COMPUTING: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/20',
+  ENGINEERING: 'bg-orange-500/15 text-orange-400 border-orange-500/20',
+  BUSINESS: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
   HUMANITIES_AND_SCIENCE: 'bg-purple-500/15 text-purple-400 border-purple-500/20',
 };
 const ROLE_LABEL = {
@@ -154,12 +155,11 @@ function ShopOrdersList() {
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs font-bold text-indigo-400">#{order.id.slice(-6).toUpperCase()}</span>
-              <span className={`px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
-                order.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500' :
-                order.status === 'READY' ? 'bg-indigo-500/10 text-indigo-500' :
-                order.status === 'COLLECTED' ? 'bg-green-500/10 text-green-500' :
-                'bg-slate-700 text-slate-400'
-              }`}>
+              <span className={`px-1.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${order.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500' :
+                  order.status === 'READY' ? 'bg-indigo-500/10 text-indigo-500' :
+                    order.status === 'COLLECTED' ? 'bg-green-500/10 text-green-500' :
+                      'bg-slate-700 text-slate-400'
+                }`}>
                 {order.status}
               </span>
             </div>
@@ -190,6 +190,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [certificates, setCertificates] = useState([]);
+  const [volunteerTasks, setVolunteerTasks] = useState([]);
 
   // Delete account state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -211,7 +213,13 @@ export default function ProfilePage() {
         setError(err.response?.data?.error || 'Failed to load profile.');
       })
       .finally(() => setLoading(false));
-  }, [userId, navigate]);
+
+    // If it's the logged-in user, fetch volunteer data
+    if (isOwnProfile) {
+      getMyCertificates().then(setCertificates).catch(() => { });
+      getMyTasks().then(setVolunteerTasks).catch(() => { });
+    }
+  }, [userId, navigate, isOwnProfile]);
 
   // Fetch club info if the viewer is a club admin (for delete warning)
   useEffect(() => {
@@ -331,8 +339,33 @@ export default function ProfilePage() {
             <div className="grid grid-cols-3 gap-4">
               <StatBox label="Points earned" value={profile.points ?? 0} emoji="🏆" />
               <StatBox label="Events attended" value={0} emoji="📅" />
-              <StatBox label="Volunteer sessions" value={0} emoji="🤝" />
+              <StatBox label="Volunteer sessions" value={isOwnProfile ? volunteerTasks.length : 0} emoji="🤝" />
             </div>
+
+            {/* ── Certificates (own profile only) ── */}
+            {isOwnProfile && certificates.length > 0 && (
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold uppercase tracking-widest text-slate-500">Recent Certificates</h2>
+                  <Link to="/my-volunteering" className="text-xs text-indigo-400 hover:underline font-bold uppercase transition-all">View All Hub</Link>
+                </div>
+                <div className="space-y-3">
+                  {certificates.slice(0, 3).map(cert => (
+                    <div key={cert.id} className="flex items-center justify-between p-4 bg-slate-800/40 rounded-xl border border-slate-700/30">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">📜</span>
+                        <span className="text-sm font-medium text-slate-200">Volunteer Certificate</span>
+                      </div>
+                      {cert.status === 'GENERATED' && (
+                        <a href={cert.pdfUrl} target="_blank" rel="noreferrer" className="text-indigo-400 hover:text-indigo-300">
+                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* ── My Shop Orders (own profile only) ── */}
             {isOwnProfile && (
@@ -358,11 +391,10 @@ export default function ProfilePage() {
                   </code>
                   <button
                     onClick={copyReferralCode}
-                    className={`flex-shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                      copied
+                    className={`flex-shrink-0 flex items-center gap-1.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${copied
                         ? 'bg-emerald-600/20 border border-emerald-500/30 text-emerald-400'
                         : 'bg-indigo-600 hover:bg-indigo-500 text-white'
-                    }`}
+                      }`}
                   >
                     {copied ? (
                       <><svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg> Copied!</>
