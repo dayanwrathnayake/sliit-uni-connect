@@ -39,7 +39,7 @@ export default function EditStudentModal({ student, onClose, onSave }) {
     setLoading(true);
 
     try {
-      await updateStudent(student.studentId, {
+      await updateStudent(student.id, {
         displayName: data.displayName,
         role: data.role,
         points: parseInt(data.points, 10),

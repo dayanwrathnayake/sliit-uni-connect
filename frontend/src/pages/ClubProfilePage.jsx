@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useClub } from '../hooks/useClub';
-import { likePost } from '../api/clubApi';
+import { likePost, deletePost } from '../api/clubApi';
 import { isStudent } from '../utils/roles';
 import { useToast } from '../hooks/useToast';
 import api from '../api/axios';
@@ -92,6 +92,7 @@ export default function ClubProfilePage() {
   const { showToast, toast } = useToast();
   const [activeTab, setActiveTab] = useState('posts');
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState('');
@@ -117,6 +118,16 @@ export default function ClubProfilePage() {
       await refetch();
     } catch {
       showToast('Failed to update like', 'error');
+    }
+  }
+
+  async function handleDeletePost(post) {
+    try {
+      await deletePost(clubId, post.id);
+      await refetch();
+      showToast('Post deleted', 'success');
+    } catch {
+      showToast('Failed to delete post', 'error');
     }
   }
 
@@ -249,6 +260,8 @@ export default function ClubProfilePage() {
                   post={post}
                   clubId={clubId}
                   onLikeToggle={handleLikeToggle}
+                  onEdit={userIsThisClubAdmin ? setEditingPost : undefined}
+                  onDelete={userIsThisClubAdmin ? handleDeletePost : undefined}
                 />
               ))
             )}
@@ -317,6 +330,15 @@ export default function ClubProfilePage() {
           clubId={clubId}
           onClose={() => setShowCreatePost(false)}
           onPostCreated={refetch}
+        />
+      )}
+
+      {editingPost && (
+        <CreatePostModal
+          clubId={clubId}
+          initialPost={editingPost}
+          onClose={() => setEditingPost(null)}
+          onPostCreated={() => { setEditingPost(null); refetch(); }}
         />
       )}
 

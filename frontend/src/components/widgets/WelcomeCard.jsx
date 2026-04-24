@@ -46,7 +46,7 @@ export default function WelcomeCard() {
   }[faculty] ?? faculty;
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/40 dark:to-slate-800 rounded-xl border border-indigo-100/60 dark:border-indigo-900/40 p-4">
+    <div className="bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/40 dark:to-slate-800 rounded-xl border border-indigo-100/60 dark:border-indigo-900/40 p-6">
       {/* Greeting */}
       <div className="mb-3">
         <p className="text-xs text-indigo-500 dark:text-indigo-400 font-medium">{getGreeting()}</p>
@@ -66,9 +66,9 @@ export default function WelcomeCard() {
           </div>
         )}
         <div className="min-w-0">
-          <p className="text-base font-semibold text-gray-800 dark:text-slate-100 truncate">{displayName}</p>
+          <p className="text-lg font-semibold text-gray-800 dark:text-slate-100 truncate">{displayName}</p>
           {studentId && (
-            <p className="text-sm font-mono font-medium text-indigo-500 dark:text-indigo-400 truncate">{studentId}</p>
+            <p className="text-sm font-mono font-medium text-indigo-500 dark:text-white truncate">{studentId}</p>
           )}
           {facultyLabel && (
             <span className="inline-block text-xs font-medium bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full px-2 py-0.5 mt-0.5">
