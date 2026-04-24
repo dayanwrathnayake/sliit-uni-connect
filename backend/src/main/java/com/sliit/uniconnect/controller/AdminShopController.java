@@ -25,14 +25,12 @@ public class AdminShopController {
     public ResponseEntity<List<ProductResponseDTO>> getProducts(
             Authentication authentication,
             @RequestParam(required = false) String clubId) {
-        
-        String finalClubId = resolveClubId(authentication, clubId);
-        if (finalClubId == null) {
-            // If System Admin and no clubId, return all? 
-            // For now, let's say clubId is required or we fetch all products
+
+        if (clubId == null || clubId.isBlank()) {
+            // No filter — return ALL active products across all clubs
             return ResponseEntity.ok(shopService.getAllActiveProducts(null, null, null));
         }
-        return ResponseEntity.ok(shopService.getClubProducts(finalClubId));
+        return ResponseEntity.ok(shopService.getClubProducts(clubId));
     }
 
     @PostMapping("/products")
@@ -63,12 +61,12 @@ public class AdminShopController {
     public ResponseEntity<List<OrderResponseDTO>> getOrders(
             Authentication authentication,
             @RequestParam(required = false) String clubId) {
-        
-        String finalClubId = resolveClubId(authentication, clubId);
-        if (finalClubId == null) {
-            return ResponseEntity.ok(List.of()); // Or all orders
+
+        if (clubId == null || clubId.isBlank()) {
+            // No filter — return ALL orders across all clubs
+            return ResponseEntity.ok(shopService.getAllOrders());
         }
-        return ResponseEntity.ok(shopService.getClubOrders(finalClubId));
+        return ResponseEntity.ok(shopService.getClubOrders(clubId));
     }
 
     @PatchMapping("/orders/{id}/status")
@@ -84,7 +82,7 @@ public class AdminShopController {
     public ResponseEntity<ShopStatsDTO> getStats(
             Authentication authentication,
             @RequestParam(required = false) String clubId) {
-        
+
         String finalClubId = resolveClubId(authentication, clubId);
         if (finalClubId == null) {
             return ResponseEntity.badRequest().build();
@@ -93,11 +91,13 @@ public class AdminShopController {
     }
 
     private String resolveClubId(Authentication auth, String requestedClubId) {
-        // Simple logic: if requestedClubId is provided, and user is SYSTEM_ADMIN, use it.
+        // Simple logic: if requestedClubId is provided, and user is SYSTEM_ADMIN, use
+        // it.
         // If user is CLUB_ADMIN, ignore requestedClubId and find their own.
         // Security check omitted for brevity but should be there.
-        if (requestedClubId != null) return requestedClubId;
-        
+        if (requestedClubId != null)
+            return requestedClubId;
+
         return clubRepository.findByAdminId(auth.getName())
                 .map(Club::getId)
                 .orElse(null);
