@@ -7,11 +7,13 @@ import {
   deleteAdminProduct
 } from '../../api/adminApi';
 import { getAllClubs } from '../../api/clubApi';
+import { useAuthStore } from '../../store/authStore';
 import { useToast } from '../../hooks/useToast';
 
 const categories = ['MERCHANDISE', 'EVENT_TICKETS', 'STATIONERY', 'OTHER'];
 
 export default function ProductManagementPage() {
+  const { user } = useAuthStore();
   const { showToast } = useToast();
   const [products, setProducts] = useState([]);
   const [clubs, setClubs] = useState([]);
