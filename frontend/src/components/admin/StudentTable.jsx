@@ -4,6 +4,12 @@ const roleBadge = {
   DEPT_LEADER: 'bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400',
 };
 
+const roleLabel = {
+  STUDENT:     'Student',
+  CLUB_ADMIN:  'Club Admin',
+  DEPT_LEADER: 'Dept Leader',
+};
+
 function SkeletonRow() {
   return (
     <tr className="animate-pulse">
@@ -106,8 +112,8 @@ export default function StudentTable({ students, loading, onEdit, onDelete, onVi
 
               {/* Role */}
               <td className="px-4 py-3">
-                <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${roleBadge[student.role] ?? roleBadge.STUDENT}`}>
-                  {student.role?.replace('_', ' ')}
+                <span className={`inline-block text-xs px-2 py-0.5 rounded-full font-medium ${roleBadge[student.role] ?? 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300'}`}>
+                  {roleLabel[student.role] ?? (student.role ?? 'Student')}
                 </span>
               </td>
 
