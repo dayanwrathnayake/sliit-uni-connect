@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import AdminLayout from '../../components/admin/AdminLayout';
 import StudentTable from '../../components/admin/StudentTable';
 import CreateStudentModal from '../../components/admin/CreateStudentModal';
@@ -25,18 +27,107 @@ const ROLES = [
 
 export default function AdminUsersPage() {
   const { toast, showToast } = useToast();
-  const [users, setUsers]       = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [hasMore, setHasMore]   = useState(true);
-  const [page, setPage]         = useState(0);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editUser, setEditUser]               = useState(null);
-  const [viewUserId, setViewUserId]           = useState(null);
-  const [deleteUser_, setDeleteUser]          = useState(null);
-  const [filters, setFilters]   = useState({ search: '', faculty: '', role: '' });
+  const [editUser, setEditUser] = useState(null);
+  const [viewUserId, setViewUserId] = useState(null);
+  const [deleteUser_, setDeleteUser] = useState(null);
+  const [filters, setFilters] = useState({ search: '', faculty: '', role: '' });
   const sentinelRef = useRef(null);
 
   const hasActiveFilter = filters.search || filters.faculty || filters.role;
+
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  async function downloadPdf() {
+    if (pdfLoading) return;
+    setPdfLoading(true);
+    try {
+      // Fetch ALL matching users (no pagination) for the PDF
+      const response = await getUsers({
+        page: 0,
+        size: 9999,
+        search: filters.search,
+        faculty: filters.faculty,
+        role: filters.role,
+      });
+      const data = response.data?.content ?? response.data?.data ?? response.data ?? [];
+      const list = Array.isArray(data) ? data : [];
+
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      // ── Header bar ──────────────────────────────────────────────
+      doc.setFillColor(67, 56, 202); // indigo-700
+      doc.rect(0, 0, 297, 20, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SLIIT UNI-Connect - User List', 10, 13);
+
+      // Timestamp + filter context (right-aligned)
+      const now = new Date().toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+      const filterParts = [
+        filters.role ? `Role: ${filters.role.replace('_', ' ')}` : null,
+        filters.faculty ? `Faculty: ${filters.faculty.replace('_', ' ')}` : null,
+        filters.search ? `Search: "${filters.search}"` : null,
+      ].filter(Boolean);
+      const subtitle = filterParts.length ? filterParts.join(' · ') : 'All Users';
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${subtitle}  |  Generated: ${now}`, 287, 13, { align: 'right' });
+
+      // ── Table ───────────────────────────────────────────────────
+      const roleLabel = { STUDENT: 'Student', CLUB_ADMIN: 'Club Admin', DEPT_LEADER: 'Dept Leader' };
+
+      autoTable(doc, {
+        startY: 24,
+        head: [['#', 'Student ID', 'Name', 'Email', 'Faculty', 'Role', 'Points']],
+        body: list.map((u, i) => [
+          i + 1,
+          u.studentId ?? '—',
+          u.displayName ?? '—',
+          u.email ?? '—',
+          u.faculty ?? '—',
+          roleLabel[u.role] ?? u.role ?? '—',
+          u.points ?? 0,
+        ]),
+        styles: { fontSize: 8, cellPadding: 3 },
+        headStyles: { fillColor: [67, 56, 202], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [245, 245, 255] },
+        columnStyles: {
+          0: { halign: 'center', cellWidth: 10 },
+          1: { cellWidth: 28 },
+          3: { cellWidth: 60 },
+          6: { halign: 'center', cellWidth: 18 },
+        },
+      });
+
+      // ── Footer ──────────────────────────────────────────────────
+      const pageCount = doc.getNumberOfPages();
+      for (let p = 1; p <= pageCount; p++) {
+        doc.setPage(p);
+        doc.setFontSize(7);
+        doc.setTextColor(150);
+        doc.text(`Page ${p} of ${pageCount}`, 287, 205, { align: 'right' });
+      }
+
+      const slug = [
+        'users',
+        filters.role || 'all',
+        filters.faculty || 'all-faculties',
+        new Date().toISOString().slice(0, 10),
+      ].join('_');
+      doc.save(`${slug}.pdf`);
+      showToast('PDF downloaded successfully', 'success');
+    } catch {
+      showToast('Failed to generate PDF', 'error');
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   async function fetchUsers(pageNum, reset = false) {
     try {
@@ -99,15 +190,38 @@ export default function AdminUsersPage() {
                 {Array.isArray(users) ? users.length : 0} shown
               </span>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              Add User
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Export PDF */}
+              <button
+                onClick={downloadPdf}
+                disabled={pdfLoading || users.length === 0}
+                title={pdfLoading ? 'Generating PDF…' : 'Download as PDF'}
+                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {pdfLoading ? (
+                  <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                  </svg>
+                )}
+                {pdfLoading ? 'Downloading…' : 'Download PDF'}
+              </button>
+
+              {/* Add User */}
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-indigo-500/20"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Add User
+              </button>
+            </div>
           </div>
 
           {/* Filters */}
