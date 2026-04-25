@@ -7,14 +7,20 @@ import ViewStudentDetailModal from '../../components/admin/ViewStudentDetailModa
 import DeleteConfirmationModal from '../../components/admin/DeleteConfirmationModal';
 import ToastContainer from '../../components/common/ToastContainer';
 import { useToast } from '../../hooks/useToast';
-import { getStudents, deleteStudent } from '../../api/adminApi';
+import { getUsers, deleteStudent } from '../../api/adminApi';
 
 const FACULTIES = [
   { value: '', label: 'All Faculties' },
-  { value: 'Faculty of Computing', label: 'Computing' },
-  { value: 'Faculty of Engineering', label: 'Engineering' },
-  { value: 'Faculty of Business', label: 'Business' },
-  { value: 'Faculty of Humanities & Science', label: 'Humanities & Science' },
+  { value: 'COMPUTING', label: 'Computing' },
+  { value: 'ENGINEERING', label: 'Engineering' },
+  { value: 'BUSINESS', label: 'Business' },
+  { value: 'HUMANITIES_AND_SCIENCE', label: 'Humanities & Science' },
+];
+
+const ROLES = [
+  { value: '', label: 'All Roles' },
+  { value: 'STUDENT', label: 'Student' },
+  { value: 'CLUB_ADMIN', label: 'Club Admin' },
 ];
 
 export default function AdminUsersPage() {
@@ -27,19 +33,20 @@ export default function AdminUsersPage() {
   const [editUser, setEditUser]               = useState(null);
   const [viewUserId, setViewUserId]           = useState(null);
   const [deleteUser_, setDeleteUser]          = useState(null);
-  const [filters, setFilters]   = useState({ search: '', faculty: '' });
+  const [filters, setFilters]   = useState({ search: '', faculty: '', role: '' });
   const sentinelRef = useRef(null);
 
-  const hasActiveFilter = filters.search || filters.faculty;
+  const hasActiveFilter = filters.search || filters.faculty || filters.role;
 
   async function fetchUsers(pageNum, reset = false) {
     try {
       setLoading(true);
-      const response = await getStudents({
+      const response = await getUsers({
         page: pageNum,
         size: 20,
         search: filters.search,
         faculty: filters.faculty,
+        role: filters.role,
       });
 
       const data = response.data?.content ?? response.data?.data ?? response.data ?? [];
@@ -119,9 +126,16 @@ export default function AdminUsersPage() {
             >
               {FACULTIES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
+            <select
+              value={filters.role}
+              onChange={(e) => setFilters({ ...filters, role: e.target.value })}
+              className="border border-gray-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              {ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+            </select>
             {hasActiveFilter && (
               <button
-                onClick={() => setFilters({ search: '', faculty: '' })}
+                onClick={() => setFilters({ search: '', faculty: '', role: '' })}
                 className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors font-medium"
               >
                 Clear
