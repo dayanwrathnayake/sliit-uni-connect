@@ -60,6 +60,25 @@ public class EventService {
         return eventRepository.save(event);
     }
 
+    // ── 1.5 Update Event ─────────────────────────────────────────────────────
+
+    public Event updateEvent(String eventId, EventDTO dto, String userId) {
+        Event event = findEventOrThrow(eventId);
+        if (!event.getCreatedBy().equals(userId)) {
+            throw new UnauthorizedClubActionException("Only the event creator can update the event");
+        }
+        event.setTitle(dto.getTitle());
+        event.setDescription(dto.getDescription());
+        event.setType(dto.getType());
+        event.setStartDate(dto.getStartDate());
+        event.setEndDate(dto.getEndDate());
+        event.setVenue(dto.getVenue());
+        event.setCapacity(dto.getCapacity());
+        event.setImageUrl(dto.getImageUrl());
+        event.setUpdatedAt(LocalDateTime.now());
+        return eventRepository.save(event);
+    }
+
     // ── 2. Submit for Approval ───────────────────────────────────────────────
 
     public Event submitForApproval(String eventId, String userId) {
@@ -230,6 +249,26 @@ public class EventService {
         event.setStatus(EventStatus.CLOSED);
         event.setUpdatedAt(LocalDateTime.now());
         return eventRepository.save(event);
+    }
+
+    // ── 6.6 Delete Event ──────────────────────────────────────────────────────
+
+    public void deleteEvent(String eventId, String userId) {
+        Event event = findEventOrThrow(eventId);
+        
+        Club club = clubRepository.findById(event.getClubId()).orElse(null);
+        boolean isAuthorized = event.getCreatedBy().equals(userId) || 
+                             (club != null && userId.equals(club.getAdminId()));
+                             
+        if (!isAuthorized) {
+            throw new UnauthorizedClubActionException("Only the event creator or club admin can delete the event");
+        }
+        
+        if (event.getStatus() != EventStatus.CLOSED && event.getStatus() != EventStatus.DRAFT) {
+            throw new IllegalStateException("Event must be CLOSED or DRAFT before it can be deleted");
+        }
+        
+        eventRepository.delete(event);
     }
 
     // ── 7. Get Calendar Events ───────────────────────────────────────────────

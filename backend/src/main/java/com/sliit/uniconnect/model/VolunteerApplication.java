@@ -29,4 +29,10 @@ public class VolunteerApplication {
     private VolunteerStatus status;
     private LocalDateTime appliedAt;
     private FacultyEnum faculty; // from user's faculty
+
+    @org.springframework.data.annotation.Transient
+    private String userName;
+
+    @org.springframework.data.annotation.Transient
+    private String userStudentId;
 }

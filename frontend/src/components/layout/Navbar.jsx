@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
 import { avatarColour, initials } from '../profile/ProfileCard';
-import { canApproveClubs, isStudent, isSystemAdmin } from '../../utils/roles';
+import { canApproveClubs, isStudent, isSystemAdmin, isClubAdmin } from '../../utils/roles';
 import NotificationBell from '../notifications/NotificationBell';
 import useCartStore from '../../store/cartStore';
 
@@ -110,6 +110,24 @@ export default function Navbar() {
                 >
                   Chat
                 </Link>
+
+                {isStudent(store) && (
+                  <Link
+                    to="/my-volunteering"
+                    className="px-3 py-1.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors font-medium"
+                  >
+                    Volunteer Hub
+                  </Link>
+                )}
+
+                {isClubAdmin(store) && (
+                  <Link
+                    to="/club/dashboard/volunteer-management"
+                    className="px-3 py-1.5 text-sm text-violet-400 hover:text-violet-300 hover:bg-slate-800 rounded-lg transition-colors font-medium"
+                  >
+                    Manage Volunteers
+                  </Link>
+                )}
                 {canApproveClubs(store) && (
                   <Link
                     to="/admin/clubs/pending"

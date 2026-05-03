@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const COLOR_MAP = {
   indigo: { block: 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400', badge: 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' },
@@ -27,7 +27,8 @@ function SkeletonRow() {
 }
 
 export default function UpcomingEventsWidget({ events = [], loading }) {
-  const colors = (color) => COLOR_MAP[color] || COLOR_MAP.indigo;
+  const colors   = (color) => COLOR_MAP[color] || COLOR_MAP.indigo;
+  const navigate = useNavigate();
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 p-4">
@@ -40,9 +41,7 @@ export default function UpcomingEventsWidget({ events = [], loading }) {
 
       {loading ? (
         <div className="space-y-1 divide-y divide-gray-50 dark:divide-slate-700">
-          <SkeletonRow />
-          <SkeletonRow />
-          <SkeletonRow />
+          <SkeletonRow /><SkeletonRow /><SkeletonRow />
         </div>
       ) : events.length === 0 ? (
         <p className="text-sm text-gray-400 dark:text-slate-500 text-center py-4">No upcoming events</p>
@@ -52,20 +51,31 @@ export default function UpcomingEventsWidget({ events = [], loading }) {
             const { day, month } = formatDateBlock(event.date);
             const c = colors(event.color);
             return (
-              <div key={event.id} className="flex items-start gap-3 py-2.5">
-                <div className={`flex-shrink-0 w-10 rounded-lg flex flex-col items-center justify-center py-1 ${c.block}`}>
-                  <span className="text-base font-bold leading-none">{day}</span>
-                  <span className="text-[10px] font-medium uppercase leading-none mt-0.5">{month}</span>
+              <div key={event.id} className="py-2.5 space-y-2">
+                <div className="flex items-start gap-3">
+                  <div className={`flex-shrink-0 w-10 rounded-lg flex flex-col items-center justify-center py-1 ${c.block}`}>
+                    <span className="text-base font-bold leading-none">{day}</span>
+                    <span className="text-[10px] font-medium uppercase leading-none mt-0.5">{month}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{event.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5">
+                      {event.time} · {event.location}
+                    </p>
+                    <span className={`inline-block mt-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${c.badge}`}>
+                      {event.category}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{event.title}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5">
-                    {event.time} · {event.location}
-                  </p>
-                  <span className={`inline-block mt-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full ${c.badge}`}>
-                    {event.category}
-                  </span>
-                </div>
+                {/* Quick volunteer action for published events */}
+                {event.status === 'PUBLISHED' && (
+                  <button
+                    onClick={() => navigate(`/volunteer/apply/${event.id}`)}
+                    className="w-full text-xs font-bold py-1.5 px-3 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-lg transition-colors border border-indigo-100 dark:border-indigo-800/50"
+                  >
+                    🤝 Volunteer for this Event
+                  </button>
+                )}
               </div>
             );
           })}

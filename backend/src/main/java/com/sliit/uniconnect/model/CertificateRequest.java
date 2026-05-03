@@ -23,4 +23,10 @@ public class CertificateRequest {
     private CertificateStatus status;
     private LocalDateTime requestedAt;
     private String pdfUrl; // placeholder until generated
+
+    @org.springframework.data.annotation.Transient
+    private String userName;
+
+    @org.springframework.data.annotation.Transient
+    private String userStudentId;
 }

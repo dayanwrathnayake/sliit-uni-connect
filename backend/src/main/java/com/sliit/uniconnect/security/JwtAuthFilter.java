@@ -62,9 +62,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     : userRepository.existsById(userId);
 
             if (exists) {
-                List<SimpleGrantedAuthority> authorities = role != null
-                        ? List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                        : List.of();
+                // Always grant the specific role (e.g. ROLE_CLUB_ADMIN, ROLE_DEPT_LEADER).
+                // Also grant ROLE_STUDENT to every student-type user so that
+                // @PreAuthorize("hasRole('STUDENT')") works for all student sub-roles.
+                List<SimpleGrantedAuthority> authorities;
+                if (role != null) {
+                    if ("STUDENT".equals(userType) && !"STUDENT".equals(role)) {
+                        // Sub-role student: grant both ROLE_<sub-role> and ROLE_STUDENT
+                        authorities = List.of(
+                                new SimpleGrantedAuthority("ROLE_" + role),
+                                new SimpleGrantedAuthority("ROLE_STUDENT")
+                        );
+                    } else {
+                        authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                    }
+                } else {
+                    authorities = List.of();
+                }
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userId, null, authorities);

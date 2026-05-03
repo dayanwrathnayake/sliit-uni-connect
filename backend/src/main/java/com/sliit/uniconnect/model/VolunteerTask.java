@@ -25,4 +25,10 @@ public class VolunteerTask {
     private String taskDescription;
     private TaskStatus status;
     private LocalDateTime completedAt;
+
+    @org.springframework.data.annotation.Transient
+    private String userName;
+
+    @org.springframework.data.annotation.Transient
+    private String userStudentId;
 }

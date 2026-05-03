@@ -72,6 +72,19 @@ public class EventController {
         return ResponseEntity.ok(eventService.closeEvent(id, currentUserId()));
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('CLUB_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<Event> updateEvent(@PathVariable String id, @Valid @RequestBody EventDTO dto) {
+        return ResponseEntity.ok(eventService.updateEvent(id, dto, currentUserId()));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('CLUB_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    public ResponseEntity<Void> deleteEvent(@PathVariable String id) {
+        eventService.deleteEvent(id, currentUserId());
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/calendar")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<Event>> getCalendarEvents(

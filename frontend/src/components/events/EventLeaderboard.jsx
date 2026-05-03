@@ -32,7 +32,7 @@ export default function EventLeaderboard({ eventId, eventStatus, isOpen, onClose
       setHasRequested(true);
       alert('Certificate request submitted!');
     } catch (err) {
-      alert(err.response?.data?.message || 'Request failed');
+      alert(err.response?.data?.error || err.response?.data?.message || 'Request failed');
     }
   };
 
@@ -85,7 +85,7 @@ export default function EventLeaderboard({ eventId, eventStatus, isOpen, onClose
                       {index + 1}
                     </span>
                     <div className="font-bold text-slate-900 dark:text-white">
-                       {leader.userId === user?.userId ? 'You' : `Volunteer ${leader.userId.substring(0, 5)}...`}
+                       {leader.userId === user?.userId ? 'You' : `${leader.userName || 'Unknown'} (${leader.userStudentId || leader.userId.substring(0, 5)})`}
                     </div>
                   </div>
                   <PointsChip points={leader.points} size="sm" />

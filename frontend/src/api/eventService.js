@@ -10,6 +10,21 @@ export const submitForApproval = async (eventId) => {
   return data;
 };
 
+export const updateEvent = async (eventId, eventData) => {
+  const { data } = await api.put(`/api/events/${eventId}`, eventData);
+  return data;
+};
+
+export const closeEvent = async (eventId) => {
+  const { data } = await api.put(`/api/events/${eventId}/close`);
+  return data;
+};
+
+export const deleteEvent = async (eventId) => {
+  const { data } = await api.delete(`/api/events/${eventId}`);
+  return data;
+};
+
 export const approveByDept = async (eventId, comments) => {
   const { data } = await api.put(`/api/events/${eventId}/approve/department`, { comments });
   return data;

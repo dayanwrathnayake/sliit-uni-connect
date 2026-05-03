@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { createEvent } from '../../api/eventService';
+import { createEvent, updateEvent } from '../../api/eventService';
 import { getAllClubs } from '../../api/clubApi';
 
 const EVENT_TYPES = [
@@ -7,14 +7,24 @@ const EVENT_TYPES = [
   'CLUB_EVENT', 'SEMINAR', 'HACKATHON', 'CULTURAL'
 ];
 
-export default function CreateEventForm({ onSuccess, onCancel }) {
+export default function CreateEventForm({ onSuccess, onCancel, initialData }) {
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
   const [imagePreview, setImagePreview] = useState(null);
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(initialData ? {
+    title: initialData.title || '',
+    description: initialData.description || '',
+    type: initialData.type || 'CLUB_EVENT',
+    startDate: initialData.startDate ? initialData.startDate.slice(0, 16) : '',
+    endDate: initialData.endDate ? initialData.endDate.slice(0, 16) : '',
+    venue: initialData.venue || '',
+    capacity: initialData.capacity || 50,
+    clubId: initialData.clubId || '',
+    imageUrl: initialData.imageUrl || ''
+  } : {
     title: '',
     description: '',
     type: 'CLUB_EVENT',
@@ -27,16 +37,18 @@ export default function CreateEventForm({ onSuccess, onCancel }) {
     imageFile: null
   });
 
+  const isEdit = !!initialData;
+
   useEffect(() => {
     getAllClubs()
       .then(data => {
         setClubs(data);
-        if (data.length > 0) {
+        if (data.length > 0 && !formData.clubId) {
           setFormData(prev => ({ ...prev, clubId: data[0].id }));
         }
       })
       .catch(err => setError('Failed to load clubs'));
-  }, []);
+  }, [formData.clubId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -105,18 +117,23 @@ export default function CreateEventForm({ onSuccess, onCancel }) {
         dataToSubmit = cleanData;
       }
 
-      const newEvent = await createEvent(dataToSubmit);
-      if (onSuccess) onSuccess(newEvent);
+      let savedEvent;
+      if (isEdit) {
+        savedEvent = await updateEvent(initialData.id, dataToSubmit);
+      } else {
+        savedEvent = await createEvent(dataToSubmit);
+      }
+      if (onSuccess) onSuccess(savedEvent);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create event. Check your dates!');
+      setError(err.response?.data?.message || `Failed to ${isEdit ? 'update' : 'create'} event. Check your dates!`);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Create New Event</h2>
+    <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 max-w-2xl mx-auto max-h-[90vh] overflow-y-auto">
+      <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">{isEdit ? 'Update Event' : 'Create New Event'}</h2>
       
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-lg mb-4 text-sm border border-red-100 dark:border-red-900/30">
@@ -281,7 +298,7 @@ export default function CreateEventForm({ onSuccess, onCancel }) {
             disabled={loading}
             className="flex-1 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg shadow-blue-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Creating...' : 'Create Event'}
+            {loading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Event' : 'Create Event')}
           </button>
         </div>
       </form>

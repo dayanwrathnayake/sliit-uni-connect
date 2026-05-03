@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getEventById, registerForEvent, unregisterFromEvent, submitForApproval } from '../api/eventService';
+import { getEventById, registerForEvent, unregisterFromEvent, submitForApproval, closeEvent, deleteEvent } from '../api/eventService';
 import { useAuthStore } from '../store/authStore';
 import PageLayout from '../components/layout/PageLayout';
 import ChatDrawer from '../components/chat/ChatDrawer';
 import { getMyApplications } from '../api/volunteerService';
 import EventLeaderboard from '../components/events/EventLeaderboard';
+import CreateEventForm from '../components/events/CreateEventForm';
 
 export default function EventDetailPage() {
   const { id } = useParams();
@@ -18,14 +19,15 @@ export default function EventDetailPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isApplied, setIsApplied] = useState(false);
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   const fetchEvent = async () => {
     try {
       const data = await getEventById(id);
       setEvent(data);
       
-      // Also check if user has already applied for volunteering
-      if (userId) {
+      // Check volunteer application status — only for regular students, not club admins
+      if (userId && role !== 'CLUB_ADMIN') {
         const apps = await getMyApplications();
         const hasApplied = apps.some(app => app.eventId === id);
         setIsApplied(hasApplied);
@@ -71,6 +73,32 @@ export default function EventDetailPage() {
       await fetchEvent();
     } catch (err) {
       alert('Failed to submit for approval');
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleCloseEvent = async () => {
+    if (!window.confirm('Are you sure you want to close this event? It cannot be re-opened.')) return;
+    setIsRefreshing(true);
+    try {
+      await closeEvent(id);
+      await fetchEvent();
+      alert('Event closed successfully!');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to close event');
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!window.confirm('Are you absolutely sure you want to delete this event? This is permanent.')) return;
+    setIsRefreshing(true);
+    try {
+      await deleteEvent(id);
+      alert('Event deleted successfully!');
+      navigate('/events');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete event');
       setIsRefreshing(false);
     }
   };
@@ -149,8 +177,8 @@ export default function EventDetailPage() {
             </div>
 
             <div className="flex flex-wrap gap-4 pt-6 border-t border-slate-100 dark:border-slate-800">
-              {/* Event Registration (Attendee) */}
-              {canRegister && !isFull && (
+              {/* Event Registration (Attendee) — hidden for the event creator (they own it) */}
+              {canRegister && !isFull && !isCreator && (
                 <button
                   onClick={handleRegister}
                   disabled={isRefreshing}
@@ -159,7 +187,7 @@ export default function EventDetailPage() {
                   Join Event
                 </button>
               )}
-              {isRegistered && (
+              {isRegistered && !isCreator && (
                 <button
                   onClick={handleUnregister}
                   disabled={isRefreshing}
@@ -169,8 +197,8 @@ export default function EventDetailPage() {
                 </button>
               )}
 
-              {/* Volunteering Actions */}
-              {event.status === 'PUBLISHED' && !isApplied && (event.facultyScope === 'ALL_FACULTIES' || event.faculty === useAuthStore.getState().faculty) && (
+              {/* Volunteering Actions — hidden only for the event creator (they manage, not volunteer) */}
+              {!isCreator && event.status === 'PUBLISHED' && !isApplied && (event.facultyScope === 'ALL_FACULTIES' || event.faculty === useAuthStore.getState().faculty) && (
                 <button
                   onClick={() => navigate(`/volunteer/apply/${id}`)}
                   className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transition-all"
@@ -179,11 +207,21 @@ export default function EventDetailPage() {
                 </button>
               )}
               
-              {isApplied && (
+              {!isCreator && isApplied && (
                  <div className="flex items-center gap-2 px-6 py-3 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-bold rounded-xl border border-green-100 dark:border-green-800">
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     Applied to volunteer
                  </div>
+              )}
+
+              {/* Event Creator (Club Admin) — link to their volunteer management dashboard */}
+              {isCreator && event.status === 'PUBLISHED' && (
+                <button
+                  onClick={() => navigate(`/club/${event.clubId}/volunteer-management`)}
+                  className="px-8 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl shadow-lg shadow-violet-500/30 transition-all flex items-center gap-2"
+                >
+                  🛠️ Manage Volunteers
+                </button>
               )}
 
               {event.status === 'CLOSED' && (
@@ -202,6 +240,39 @@ export default function EventDetailPage() {
                   className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 transition-all disabled:opacity-50"
                 >
                   Submit for Approval
+                </button>
+              )}
+
+              {/* Update Event — creator only */}
+              {isCreator && (
+                <button
+                  onClick={() => setShowUpdateModal(true)}
+                  disabled={isRefreshing}
+                  className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg transition-all disabled:opacity-50"
+                >
+                  ✏️ Update Event
+                </button>
+              )}
+
+              {/* Close Event — creator only */}
+              {isCreator && event.status !== 'CLOSED' && event.status !== 'DRAFT' && (
+                <button
+                  onClick={handleCloseEvent}
+                  disabled={isRefreshing}
+                  className="px-8 py-3 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg transition-all disabled:opacity-50"
+                >
+                  🛑 Close Event
+                </button>
+              )}
+
+              {/* Delete Event — creator only, after closed */}
+              {isCreator && event.status === 'CLOSED' && (
+                <button
+                  onClick={handleDeleteEvent}
+                  disabled={isRefreshing}
+                  className="px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl shadow-lg shadow-red-500/30 transition-all disabled:opacity-50"
+                >
+                  🗑️ Delete Event
                 </button>
               )}
               
@@ -229,6 +300,17 @@ export default function EventDetailPage() {
         eventId={event.id}
         eventStatus={event.status}
       />
+
+      {/* Update Event Modal */}
+      {showUpdateModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+           <CreateEventForm 
+             initialData={event}
+             onSuccess={() => { setShowUpdateModal(false); fetchEvent(); }}
+             onCancel={() => setShowUpdateModal(false)}
+           />
+        </div>
+      )}
     </PageLayout>
   );
 }

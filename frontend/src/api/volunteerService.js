@@ -12,10 +12,6 @@ export const applyToVolunteer = async (volunteerData) => {
 };
 
 export const getMyApplications = async () => {
-  // Assuming a generic GET /api/volunteers/my/applications might be useful, 
-  // but let's stick to the controller endpoints we defined.
-  // Actually, we need to add specific "my" endpoints to the backend or use existing ones.
-  // The user requested: GET /api/volunteer/applications/my
   const { data } = await api.get('/api/volunteers/my/applications');
   return data;
 };
@@ -45,7 +41,28 @@ export const requestCertificate = async (eventId) => {
   return data;
 };
 
-// ── Admin Actions ────────────────────────────────────────────────────────────
+/**
+ * Triggers a browser download of the approved certificate PDF.
+ * Uses a direct window.open so the PDF streams correctly.
+ */
+export const downloadCertificatePdf = (certificateId) => {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  // Fetch as blob and trigger download
+  return api.get(`/api/volunteers/certificates/${certificateId}/download`, {
+    responseType: 'blob',
+  }).then((res) => {
+    const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `volunteer-certificate-${certificateId}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  });
+};
+
+// ── Club Admin Actions ────────────────────────────────────────────────────────
 
 export const getEventApplications = async (eventId) => {
   const { data } = await api.get(`/api/volunteers/event/${eventId}/applications`);
@@ -58,7 +75,6 @@ export const updateApplicationStatus = async (id, status) => {
 };
 
 export const assignTask = async (applicationId, description) => {
-  // Note: The backend controller takes a raw @RequestBody String description
   const { data } = await api.post(`/api/volunteers/applications/${applicationId}/tasks`, description, {
     headers: { 'Content-Type': 'text/plain' }
   });
@@ -72,6 +88,18 @@ export const awardPoints = async (taskId, points, rating) => {
 
 export const approveCertificate = async (id) => {
   const { data } = await api.put(`/api/volunteers/certificates/${id}/approve`);
+  return data;
+};
+
+/** Club Admin: get all tasks for an event to review completed tasks and award points */
+export const getEventTasks = async (eventId) => {
+  const { data } = await api.get(`/api/volunteers/event/${eventId}/tasks`);
+  return data;
+};
+
+/** Club Admin: get all certificate requests for an event */
+export const getEventCertificateRequests = async (eventId) => {
+  const { data } = await api.get(`/api/volunteers/event/${eventId}/certificate-requests`);
   return data;
 };
 

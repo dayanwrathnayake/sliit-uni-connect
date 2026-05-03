@@ -25,4 +25,10 @@ public class VolunteerPoint {
     private int points;
     private PointRating rating;
     private LocalDateTime awardedAt;
+
+    @org.springframework.data.annotation.Transient
+    private String userName;
+
+    @org.springframework.data.annotation.Transient
+    private String userStudentId;
 }

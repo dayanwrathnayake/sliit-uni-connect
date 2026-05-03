@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface CertificateRequestRepository extends MongoRepository<CertificateRequest, String> {
     List<CertificateRequest> findByUserId(String userId);
     Optional<CertificateRequest> findByUserIdAndEventId(String userId, String eventId);
+    List<CertificateRequest> findByEventId(String eventId);
 }

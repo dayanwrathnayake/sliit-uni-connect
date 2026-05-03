@@ -20,6 +20,11 @@ public class GlobalExceptionHandler {
 
     // ── Custom domain exceptions ──────────────────────────────────────────────
 
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<Map<String, Object>> handleBusinessException(BusinessException ex) {
+        return errorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(InvalidStudentIdException.class)
     public ResponseEntity<Map<String, Object>> handleInvalidStudentId(InvalidStudentIdException ex) {
         return errorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);

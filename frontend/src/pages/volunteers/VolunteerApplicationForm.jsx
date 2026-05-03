@@ -53,7 +53,7 @@ export default function VolunteerApplicationForm() {
       // Redirect back to event detail
       navigate(`/events/${eventId}`);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit application');
+      setError(err.response?.data?.error || err.response?.data?.message || 'Failed to submit application');
     } finally {
       setLoading(false);
     }
